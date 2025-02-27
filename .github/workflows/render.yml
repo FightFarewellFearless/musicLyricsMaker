@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: '22.x'
     - name: Install dependencies
-      run: npm install && sudo apt install -y \
+      run: npm install && sudo apt update -y && sudo apt upgrade -y && sudo apt install -y \
         libnss3 \
         libdbus-1-3 \
         libatk1.0-0 \
