@@ -82,12 +82,11 @@ await renderMedia({
     process.stdout.write(`Encoded Frame / Rendered Frame: ${p.encodedFrames} / ${p.renderedFrames}\n`);
     process.stdout.write(`Progress: ${(p.progress * 100).toFixed(2)}%`);
   },
-  //concurrency: 2,
+  concurrency: 2,
   // chromiumOptions: {
   //   enableMultiProcessOnLinux: true,
   // },
-  // scale: 2/3,
-  chromeMode: 'chrome-for-testing' 
+  // scale: 2/3, 
 });
 console.log();
 console.timeEnd('Render Time');
