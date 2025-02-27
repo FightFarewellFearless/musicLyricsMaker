@@ -1,6 +1,7 @@
 name: Call Remotion-Matrix-Renderer
 
-on: push
+on:
+  workflow_dispatch:
 
 jobs:
   call-workflow-in-another-repo:
