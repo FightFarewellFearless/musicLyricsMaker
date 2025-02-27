@@ -11,7 +11,12 @@ export type DefaultProps = {
     start: number;
     text: string;
   }[];
-  background: string | 'default';
+  background: {
+    video: string
+  } | string;
+  ytmMusicInfo: string;
+  ytmThumbnail: string;
+  searchLyricsIndex: number;
 }
 export const DefaultSchema = z.object({
   musicTitle: z.string(),
@@ -19,12 +24,20 @@ export const DefaultSchema = z.object({
     start: z.number(),
     text: z.string(),
   })),
-  background: z.string().or(z.literal('default')),
+  background: z.union([z.string(), z.object({ video: z.string() })]),
+  ytmMusicInfo: z.string(),
+  ytmThumbnail: z.string(),
+  searchLyricsIndex: z.number().default(0),
 })
 const defaultProps: DefaultProps = {
   musicTitle: "It's Ok if you forget me",
   syncronizeLyrics: [],
-  background: 'default',
+  background: {
+    video: "https://static.moewalls.com/videos/preview/2021/tree-island-preview.mp4"
+  },
+  ytmMusicInfo: '',
+  ytmThumbnail: '',
+  searchLyricsIndex: 0,
 };
 
 export type DefaultThumbnailProps = {
@@ -32,8 +45,8 @@ export type DefaultThumbnailProps = {
   background: string;
 };
 const defaultThumbnailProps: DefaultThumbnailProps = {
-  musicTitle: "It's Ok if you forget me",
-  background: 'https://sebelasempat.hitam.id/api/wallpaper?url=https://raw.githubusercontent.com/orangci/walls-catppuccin-mocha/master/fox-clearing.png',
+  musicTitle: "Bad Liar - Imagine Dragons",
+  background: 'https://moewalls.com/wp-content/uploads/2025/02/naruto-watching-sunset-alone-thumb-728x410.jpg',
 };
 export const defaultThumbnailSchema = z.object({
   musicTitle: z.string(),
@@ -53,7 +66,7 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={defaultProps}
         schema={DefaultSchema}
       />
-      <Still 
+      <Still
         id="MusicThumbnail"
         component={ThumbnailCreator}
         width={1920}
@@ -81,12 +94,26 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     plainLyrics: string;
     syncedLyrics: string;
   }
-  const data: APIRes[] = await fetch(
-    "https://lrclib.net/api/search?q=" + props.musicTitle,
+  interface YTMSearch {
+    id: string;
+    title: string;
+    artists: string[];
+    thumbnail: string;
+    duration: number;
+  }
+  const ytmSearchResult: YTMSearch = await fetch(
+    'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
     { signal: abortSignal }
-  ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null));
+  ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
+  const data: APIRes[] = await fetch(
+    "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
+    { signal: abortSignal }
+  ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
+    .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2));
 
-  const syncronizeLyricsRaw = data[0].syncedLyrics.split("\n")
+  const searchData = data[defaultProps.searchLyricsIndex];
+
+  const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
   const syncronizeLyrics: { start: number; text: string }[] = [];
   syncronizeLyricsRaw.forEach(a => {
     try {
@@ -95,27 +122,27 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
       const [minutes, seconds] = start.split(":");
       syncronizeLyrics.push({
         start: (Number(minutes) * 60) + Number(seconds),
-        text: text,
+        text,
       });
     } catch { };
   });
 
-  let background: string;
+  let {background} = props;
 
-  if (props.background !== 'default') {
-    background = props.background;
-  } else {
+  if (props.background === 'default' && typeof props.background === 'string') {
     background = await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
   }
 
   return {
     // Change the metadata
-    durationInFrames: Math.round(data[0].duration * 30),
+    durationInFrames: Math.round(searchData.duration * 30),
     // or transform some props
     props: {
       ...props,
-      syncronizeLyrics: [{ start: 0, text: `[${data[0].trackName} - ${data[0].artistName}]` }, ...syncronizeLyrics],
+      syncronizeLyrics: [{ start: 0, text: `[${searchData.trackName} - ${searchData.artistName}]` }, ...syncronizeLyrics],
       background,
+      ytmThumbnail: ytmSearchResult.thumbnail,
+      ytmMusicInfo: `${searchData.trackName} - ${searchData.artistName}`,
     },
     // or add per-composition default codec
     defaultCodec: "h264",

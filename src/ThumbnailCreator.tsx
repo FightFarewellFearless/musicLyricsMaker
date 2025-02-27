@@ -11,29 +11,15 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
                     objectFit: 'cover', 
                     width: '100%', 
                     height: '100%',
-                    filter: 'blur(2px) saturate(120%)'
+                    filter: 'blur(6px) saturate(180%)'
                 }} />
                 <div style={{ 
                     position: 'absolute',
                     width: '100%',
                     height: '100%',
-                    background: `linear-gradient(45deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 100%)`
+                    background: `linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 100%)`
                 }} />
             </AbsoluteFill>
-
-            {/* Decorative Elements */}
-            <div style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                background: `repeating-linear-gradient(
-                    45deg,
-                    rgba(255,255,255,0.05) 0px,
-                    rgba(255,255,255,0.05) 2px,
-                    transparent 2px,
-                    transparent 4px
-                )`
-            }} />
 
             {/* Content Container */}
             <div style={{ 
@@ -44,48 +30,59 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '4rem',
-                textShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                padding: '2rem',
+                textShadow: '0 4px 12px rgba(0,0,0,0.7)'
             }}>
                 {/* Music Icon */}
                 <div style={{ 
-                    fontSize: 80,
-                    color: 'rgba(255,255,255,0.8)',
-                    marginBottom: '2rem',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                    fontSize: 100,
+                    color: 'rgba(255,255,255,0.95)',
+                    marginBottom: '1.5rem',
+                    filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))'
                 }}>
-                    🎵
+                    🎶
                 </div>
 
                 {/* Title Container */}
                 <div style={{
-                    background: `linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)`,
-                    padding: '2rem',
-                    borderRadius: '8px',
+                    background: `linear-gradient(90deg, rgba(255,255,255,0.3) 0%, transparent 50%, rgba(255,255,255,0.3) 100%)`,
+                    padding: '1.5rem 3rem',
+                    borderRadius: '16px',
                     position: 'relative',
-                    maxWidth: '90%'
+                    maxWidth: '80%'
                 }}>
                     <h1 style={{ 
                         color: 'white',
-                        fontSize: '6.5rem',
-                        fontWeight: 700,
+                        fontSize: '5rem',
+                        fontWeight: 900,
                         textAlign: 'center',
                         margin: 0,
-                        lineHeight: 1.2,
-                        letterSpacing: '-0.05em',
-                        fontFamily: 'Inter, sans-serif',
+                        lineHeight: 1.1,
+                        letterSpacing: '-0.03em',
+                        fontFamily: 'Poppins, sans-serif',
                     }}>
                         {props.musicTitle}
                     </h1>
                 </div>
 
+                {/* Lyrics Video Text */}
+                <div style={{
+                    marginTop: '1rem',
+                    color: 'rgba(255,255,255,0.8)',
+                    fontSize: '3rem',
+                    textAlign: 'center',
+                    fontFamily: 'Poppins, sans-serif',
+                }}>
+                    Lyrics Video
+                </div>
+
                 {/* Decorative Border */}
                 <div style={{
                     position: 'absolute',
-                    bottom: '4rem',
+                    bottom: '2rem',
                     height: '4px',
-                    width: '60%',
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)`
+                    width: '70%',
+                    background: `linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%)`
                 }} />
             </div>
         </AbsoluteFill>

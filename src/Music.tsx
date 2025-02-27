@@ -1,9 +1,10 @@
-import { AbsoluteFill, Audio, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { DefaultProps, DefaultSchema } from "./Root";
-import { useEffect, useMemo, useRef } from "react";
+import { AbsoluteFill, Audio, Img, useCurrentFrame, useVideoConfig } from "remotion";
+import { DefaultSchema } from "./Root";
+import { useMemo } from "react";
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
-import { Animated, Animation, Move, Scale } from "remotion-animated";
-import {z} from 'zod';
+import { Animated, Animation, Move, Scale, Rotate, Ease } from "remotion-animated";
+import { z } from 'zod';
+import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
     const music = `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
@@ -46,24 +47,45 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     const maxDb = -10;
     const clampNumberBetween0and1 = (num: number) => Math.min(Math.max(num, 0), 1);
     const visualization = frequencyData.map((value) => {
-        // convert to decibels (will be in the range `-Infinity` to `0`)
         const db = 20 * Math.log10(value);
-
-        // scale to fit between min and max
         const scaled = (db - minDb) / (maxDb - minDb);
 
         return clampNumberBetween0and1(scaled);
     });
-    
+
 
     return (
         <>
             <Audio src={music} />
             <AbsoluteFill style={{ backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
                 <AbsoluteFill>
-                    <Img src={props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                    {typeof props.background === 'string' ? (
+                        <Img src={props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                    ) : (
+                        <LoopableOffthreadVideo muted loop src={props.background.video} />
+                    )}
                     <div style={{ backgroundColor: 'black', opacity: 0.6, position: 'absolute', width: '100%', height: '100%' }} />
                 </AbsoluteFill>
+                <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
+                    <Animated absolute out={fps * 8} animations={[
+                        Move({ y: 0, initialY: -250, duration: fps * 3 }),
+                        Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
+                        Move({ y: -250, start: fps * 7, duration: fps })
+                    ]}>
+                        <Img src={props.ytmThumbnail} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
+                    </Animated>
+                    <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow:'hidden' }}>
+                        <Animated out={fps * 8} animations={[
+                            Move({ y: 0, initialY: -250, duration: fps * 3 }),
+                            Move({ x: 0, initialX: -1000, duration: fps * 3 }),
+                            Move({ y: -250, start: fps * 7, duration: fps })
+                        ]}>
+                            <div style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold' }}>
+                                {props.ytmMusicInfo}
+                            </div>
+                        </Animated>
+                    </div>
+                </div>
                 <div style={{ fontSize: 45, textAlign: 'center', opacity: 0.7, color: 'white' }}>
                     {previousLyrics}
                 </div>

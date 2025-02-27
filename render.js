@@ -1,11 +1,15 @@
+/* eslint-disable no-undef */
 import { bundle } from '@remotion/bundler';
 import { renderMedia, renderStill, selectComposition } from '@remotion/renderer';
 import path from 'path';
-import { downloadMusicFile } from './downloadMusicFile.js';
+console.log('Starting render...');
 const inputProps = {
-  musicTitle: "Heaven (feat. Lyodra) - Calum Scott",
+  musicTitle: "This side of paradise - Coyote Theory",
   syncronizeLyrics: [],
-  background: 'default',
+  background: 'https://moewalls.com/wp-content/uploads/2025/02/naruto-watching-sunset-alone-thumb-728x410.jpg',
+  ytmMusicInfo: '',
+  ytmThumbnail: '',
+  searchLyricsIndex: 0,
 };
 const compositionId = 'MusicLyrics';
 
@@ -28,10 +32,16 @@ if (inputProps.background === 'default') {
 //   .then(res => res.json()).then(data => data.result[Math.floor(Math.random() * data.result.length)].wallpaper);
 // console.log(background);
 // inputProps.background = background;
+
+console.log('Bundle...');
+
 const bundleLocation = await bundle({
   entryPoint: path.resolve('./src/index.ts'),
   webpackOverride: (config) => config,
 });
+
+console.log('Bundle done!');
+console.log('Rendering Thumbnail...');
 
 const composition = await selectComposition({
   serveUrl: bundleLocation,
@@ -52,19 +62,30 @@ await renderStill({
 });
 
 console.log('Thumbnail created!');
-
+console.log('Rendering...', inputProps.musicTitle);
+console.time('Render Time');
+console.log('\n\n\n\n');
 await renderMedia({
   composition,
   serveUrl: bundleLocation,
   codec: 'h264',
   outputLocation: `out/${compositionId} - ${inputProps.musicTitle}.mp4`,
   inputProps,
-  onProgress: (p) => console.log(p),
+  onProgress: (p) => {
+    process.stdout.moveCursor(0, -3);
+    process.stdout.clearScreenDown();
+    process.stdout.write(`Stage: ${p.stitchStage}\n`);
+    const estimatedMinutes = (p.renderEstimatedTime / 60000).toFixed(2);
+    process.stdout.write(`Estimated Time: ${estimatedMinutes} minutes\n`);
+    process.stdout.write(`Rendered Frame / Encoded Frame: ${p.renderedFrames} / ${p.encodedFrames}\n`);
+    process.stdout.write(`Progress: ${(p.progress * 100).toFixed(2)}%`);
+  },
   concurrency: 2,
   // chromiumOptions: {
   //   enableMultiProcessOnLinux: true,
   // },
   // scale: 2/3,
 });
-
+console.log();
+console.timeEnd('Render Time');
 console.log('Render done!');
