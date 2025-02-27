@@ -30,10 +30,10 @@ export const DefaultSchema = z.object({
   searchLyricsIndex: z.number().default(0),
 })
 const defaultProps: DefaultProps = {
-  musicTitle: "It's Ok if you forget me",
+  musicTitle: "Rindu rumah",
   syncronizeLyrics: [],
   background: {
-    video: "https://static.moewalls.com/videos/preview/2021/tree-island-preview.mp4"
+    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
   },
   ytmMusicInfo: '',
   ytmThumbnail: '',
@@ -42,15 +42,19 @@ const defaultProps: DefaultProps = {
 
 export type DefaultThumbnailProps = {
   musicTitle: string;
-  background: string;
+  background: {
+    video: string
+  } | string;
 };
 const defaultThumbnailProps: DefaultThumbnailProps = {
-  musicTitle: "Bad Liar - Imagine Dragons",
-  background: 'https://moewalls.com/wp-content/uploads/2025/02/naruto-watching-sunset-alone-thumb-728x410.jpg',
+  musicTitle: "Rindu rumah",
+  background: {
+    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
+  },
 };
 export const defaultThumbnailSchema = z.object({
   musicTitle: z.string(),
-  background: z.string().or(z.literal('default')),
+  background: z.union([z.string(), z.object({ video: z.string() })]),
 })
 
 export const RemotionRoot: React.FC = () => {

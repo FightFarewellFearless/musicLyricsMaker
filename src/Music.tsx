@@ -62,9 +62,9 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
                     {typeof props.background === 'string' ? (
                         <Img src={props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                     ) : (
-                        <LoopableOffthreadVideo muted loop src={props.background.video} />
+                        <LoopableOffthreadVideo muted loop src={props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                     )}
-                    <div style={{ backgroundColor: 'black', opacity: 0.6, position: 'absolute', width: '100%', height: '100%' }} />
+                    <div style={{ backgroundColor: 'black', opacity: 0.5, position: 'absolute', width: '100%', height: '100%' }} />
                 </AbsoluteFill>
                 <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
                     <Animated absolute out={fps * 8} animations={[

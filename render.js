@@ -4,9 +4,11 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 import path from 'path';
 console.log('Starting render...');
 const inputProps = {
-  musicTitle: "This side of paradise - Coyote Theory",
+  musicTitle: "Rindu Rumah - Wizz Baker",
   syncronizeLyrics: [],
-  background: 'https://moewalls.com/wp-content/uploads/2025/02/naruto-watching-sunset-alone-thumb-728x410.jpg',
+  background: {
+    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
+  },
   ytmMusicInfo: '',
   ytmThumbnail: '',
   searchLyricsIndex: 0,
@@ -77,7 +79,7 @@ await renderMedia({
     process.stdout.write(`Stage: ${p.stitchStage}\n`);
     const estimatedMinutes = (p.renderEstimatedTime / 60000).toFixed(2);
     process.stdout.write(`Estimated Time: ${estimatedMinutes} minutes\n`);
-    process.stdout.write(`Rendered Frame / Encoded Frame: ${p.renderedFrames} / ${p.encodedFrames}\n`);
+    process.stdout.write(`Encoded Frame / Rendered Frame: ${p.encodedFrames} / ${p.renderedFrames}\n`);
     process.stdout.write(`Progress: ${(p.progress * 100).toFixed(2)}%`);
   },
   concurrency: 2,
