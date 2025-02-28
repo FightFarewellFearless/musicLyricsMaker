@@ -45,9 +45,9 @@ jobs:
       env:
           WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - name: creating thumbnail
-      run: npx remotion still MusicThumbnail out/lyrics.png --props="./input-props.json"
+      run: npx remotion still MusicThumbnail out/lyrics.png --props=./input-props.json
     - name: rendering...
-      run: npx remotion render MusicLyrics out/lyrics.mp4 --props="./input-props.json"
+      run: npx remotion render MusicLyrics out/lyrics.mp4 --props=./input-props.json
     - name: Upload Video
       uses: actions/upload-artifact@v4
       with:
