@@ -86,7 +86,7 @@ await renderMedia({
   // chromiumOptions: {
   //   enableMultiProcessOnLinux: true,
   // },
-  // scale: 2/3,
+  // scale: 2/3, 
 });
 console.log();
 console.timeEnd('Waktu render');
