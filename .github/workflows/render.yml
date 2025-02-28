@@ -12,14 +12,14 @@ on:
         required: true
         default: |
           {
-            musicTitle: "Tampar - Juicy Luicy",
-            syncronizeLyrics: [],
-            background: {
-              video: "https://static.moewalls.com/videos/preview/2023/rain-drops-blurry-city-preview.mp4"
-            },
-            ytmMusicInfo: '',
-            ytmThumbnail: '',
-            searchLyricsIndex: 0,
+          "musicTitle": "Everything goes on - Porter Robinson",
+          "syncronizeLyrics": [],
+          "background": {
+            "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
+          },
+          "ytmMusicInfo": "",
+          "ytmThumbnail": "",
+          "searchLyricsIndex": 0,
           }
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -40,12 +40,14 @@ jobs:
     - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Create out folder
       run: mkdir out
+    - run: echo $WORKFLOW_INPUT > input-props.json
+    - run: cat input-props.json
       env:
           WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - name: creating thumbnail
-      run: npx remotion still MusicThumbnail out/lyrics.png --props="$(echo $WORKFLOW_INPUT)"
-    # - name: rendering...
-    #   run: npx remotion render MusicLyrics out/lyrics.mp4 --props="$(echo $WORKFLOW_INPUT)"
+      run: npx remotion still MusicThumbnail out/lyrics.png --props="./input-props.json"
+    - name: rendering...
+      run: npx remotion render MusicLyrics out/lyrics.mp4 --props="./input-props.json"
     - name: Upload Video
       uses: actions/upload-artifact@v4
       with:

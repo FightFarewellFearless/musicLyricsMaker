@@ -4,14 +4,14 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 import path from 'path';
 console.log('Memulai rendering...');
 const inputProps = {
-  musicTitle: "Everything goes on - Porter Robinson",
-  syncronizeLyrics: [],
-  background: {
-    video: "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
+  "musicTitle": "Everything goes on - Porter Robinson",
+  "syncronizeLyrics": [],
+  "background": {
+    "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
   },
-  ytmMusicInfo: '',
-  ytmThumbnail: '',
-  searchLyricsIndex: 0,
+  "ytmMusicInfo": "",
+  "ytmThumbnail": "",
+  "searchLyricsIndex": 0,
 };
 const compositionId = 'MusicLyrics';
 
