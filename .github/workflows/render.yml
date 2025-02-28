@@ -41,9 +41,9 @@ jobs:
     - name: Create out folder
       run: mkdir out
     - run: echo $WORKFLOW_INPUT > input-props.json
-    - run: cat input-props.json
       env:
           WORKFLOW_INPUT: ${{ github.event.inputs.props }}
+    - run: cat input-props.json
     - name: creating thumbnail
       run: npx remotion still MusicThumbnail out/lyrics.png --props=./input-props.json
     - name: rendering...
