@@ -3,6 +3,10 @@ name: Call Remotion-Matrix-Renderer
 on:
   workflow_dispatch:
     inputs:
+      identifier:
+        description: 'Identifier'
+        type: string
+        required: false
       props:
         description: Video Props
         required: true
