@@ -2,12 +2,12 @@
 import { bundle } from '@remotion/bundler';
 import { renderMedia, renderStill, selectComposition } from '@remotion/renderer';
 import path from 'path';
-console.log('Starting render...');
+console.log('Memulai rendering...');
 const inputProps = {
-  musicTitle: "Rindu Rumah - Wizz Baker",
+  musicTitle: "Everything goes on - Porter Robinson",
   syncronizeLyrics: [],
   background: {
-    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
+    video: "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
   },
   ytmMusicInfo: '',
   ytmThumbnail: '',
@@ -42,8 +42,8 @@ const bundleLocation = await bundle({
   webpackOverride: (config) => config,
 });
 
-console.log('Bundle done!');
-console.log('Rendering Thumbnail...');
+console.log('Bundle selesai!');
+console.log('Memulai rendering Thumbnail...');
 
 const composition = await selectComposition({
   serveUrl: bundleLocation,
@@ -63,9 +63,9 @@ await renderStill({
   scale: 1 / 2,
 });
 
-console.log('Thumbnail created!');
-console.log('Rendering...', inputProps.musicTitle);
-console.time('Render Time');
+console.log('Thumbnail dibuat!');
+console.log('Merender...', inputProps.musicTitle);
+console.time('Waktu render');
 console.log('\n\n\n\n');
 await renderMedia({
   composition,
@@ -78,8 +78,8 @@ await renderMedia({
     process.stdout.clearScreenDown();
     process.stdout.write(`Stage: ${p.stitchStage}\n`);
     const estimatedMinutes = (p.renderEstimatedTime / 60000).toFixed(2);
-    process.stdout.write(`Estimated Time: ${estimatedMinutes} minutes\n`);
-    process.stdout.write(`Encoded Frame / Rendered Frame: ${p.encodedFrames} / ${p.renderedFrames}\n`);
+    process.stdout.write(`Waktu estimasi: ${estimatedMinutes} menit\n`);
+    process.stdout.write(`Frame di encode / Frame di render: ${p.encodedFrames} / ${p.renderedFrames}\n`);
     process.stdout.write(`Progress: ${(p.progress * 100).toFixed(2)}%`);
   },
   concurrency: 2,
@@ -89,5 +89,5 @@ await renderMedia({
   // scale: 2/3,
 });
 console.log();
-console.timeEnd('Render Time');
+console.timeEnd('Waktu render');
 console.log('Render done!');

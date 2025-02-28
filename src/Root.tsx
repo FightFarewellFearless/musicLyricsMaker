@@ -115,7 +115,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
   ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
     .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2));
 
-  const searchData = data[defaultProps.searchLyricsIndex];
+  const searchData = data[props.searchLyricsIndex];
 
   const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
   const syncronizeLyrics: { start: number; text: string }[] = [];
