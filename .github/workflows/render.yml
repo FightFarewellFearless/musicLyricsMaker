@@ -39,10 +39,8 @@ jobs:
     - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Create out folder
       run: mkdir out
-    - run: echo $WORKFLOW_INPUT > input-props.json
+    - run: node -e "require('fs').writeFileSync('input-props.json', JSON.stringify(${{ github.event.inputs.props }}, null, 2))"
     - run: cat input-props.json
-      env:
-          WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - name: creating thumbnail
       run: npx remotion still MusicThumbnail out/lyrics.png --props="./input-props.json"
     - name: rendering...
