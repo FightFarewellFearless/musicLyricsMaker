@@ -19,7 +19,7 @@ on:
           },
           "ytmMusicInfo": "",
           "ytmThumbnail": "",
-          "searchLyricsIndex": 0,
+          "searchLyricsIndex": 0
           }
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel

@@ -11,7 +11,7 @@ const inputProps = {
   },
   "ytmMusicInfo": "",
   "ytmThumbnail": "",
-  "searchLyricsIndex": 0,
+  "searchLyricsIndex": 0
 };
 const compositionId = 'MusicLyrics';
 
