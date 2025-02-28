@@ -45,7 +45,7 @@ jobs:
           WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - run: cat input-props.json
     - name: creating thumbnail
-      run: npx remotion still MusicThumbnail out/lyrics.png --props=./input-props.json
+      run: npx remotion still MusicThumbnail out/lyrics.png --props=./input-props.json --scale=0.5
     - name: rendering...
       run: npx remotion render MusicLyrics out/lyrics.mp4 --props=./input-props.json
     - name: Upload Video
