@@ -1,5 +1,5 @@
 name: Call Remotion-Matrix-Renderer
-
+run-name: Render ${{ github.event.inputs.identifier }}
 on:
   workflow_dispatch:
     inputs:
