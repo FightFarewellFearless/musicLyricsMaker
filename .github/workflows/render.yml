@@ -6,6 +6,21 @@ name: Render Video
 # or API.
 on:
   workflow_dispatch:
+    inputs:
+      props:
+        description: Video Props
+        required: true
+        default: |
+          {
+            musicTitle: "Tampar - Juicy Luicy",
+            syncronizeLyrics: [],
+            background: {
+              video: "https://static.moewalls.com/videos/preview/2023/rain-drops-blurry-city-preview.mp4"
+            },
+            ytmMusicInfo: '',
+            ytmThumbnail: '',
+            searchLyricsIndex: 0,
+          }
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -24,8 +39,13 @@ jobs:
     - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Create out folder
       run: mkdir out
+    - run: echo $WORKFLOW_INPUT > input-props.json
+      env:
+          WORKFLOW_INPUT: ${{ toJson(github.event.inputs.props) }}
+    - name: creating thumbnail
+      run: npx remotion still MusicThumbnail out/lyrics.png --props="./input-props.json"
     - name: rendering...
-      run: npx remotion render MusicLyrics out/lyrics.mp4
+      run: npx remotion render MusicLyrics out/lyrics.mp4 --props="./input-props.json"
     - name: Upload Video
       uses: actions/upload-artifact@v4
       with:
