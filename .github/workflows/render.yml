@@ -42,7 +42,7 @@ jobs:
     - run: echo $WORKFLOW_INPUT > input-props.json
     - run: cat input-props.json
       env:
-          WORKFLOW_INPUT: ${{ toJson(github.event.inputs.props) }}
+          WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - name: creating thumbnail
       run: npx remotion still MusicThumbnail out/lyrics.png --props="./input-props.json"
     - name: rendering...
