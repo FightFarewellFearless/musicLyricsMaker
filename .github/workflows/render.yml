@@ -44,8 +44,8 @@ jobs:
           WORKFLOW_INPUT: ${{ github.event.inputs.props }}
     - name: creating thumbnail
       run: npx remotion still MusicThumbnail out/lyrics.png --props="$(echo $WORKFLOW_INPUT)"
-    - name: rendering...
-      run: npx remotion render MusicLyrics out/lyrics.mp4 --props="$(echo $WORKFLOW_INPUT)"
+    # - name: rendering...
+    #   run: npx remotion render MusicLyrics out/lyrics.mp4 --props="$(echo $WORKFLOW_INPUT)"
     - name: Upload Video
       uses: actions/upload-artifact@v4
       with:
