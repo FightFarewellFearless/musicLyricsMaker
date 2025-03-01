@@ -3,6 +3,11 @@ run-name: Render ${{ github.event.inputs.identifier }}
 on:
   workflow_dispatch:
     inputs:
+      scale:
+        description: 'Scale'
+        type: number
+        default: 1
+        required: true
       identifier:
         description: 'Identifier'
         type: string
@@ -29,3 +34,4 @@ jobs:
       remotion_composition_id: MusicLyrics
       remotion_entry_point: src/index.ts
       props: ${{ github.event.inputs.props }}
+      scale: ${{ github.event.inputs.scale }}
