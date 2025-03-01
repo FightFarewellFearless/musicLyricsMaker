@@ -1,54 +1,53 @@
-# Remotion video
+# Music Lyrics Maker
 
-<p align="center">
-  <a href="https://github.com/remotion-dev/logo">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-dark.gif">
-      <img alt="Animated Remotion Logo" src="https://github.com/remotion-dev/logo/raw/main/animated-logo-banner-light.gif">
-    </picture>
-  </a>
-</p>
+This project is an application for creating music lyric videos using Remotion.
 
-Welcome to your Remotion project!
+> Created as a personal project and for lyric videos on YouTube
 
-## Commands
+## Installation
 
-**Install Dependencies**
+1. Clone this repository:
+    ```bash
+    git clone https://github.com/FightFarewellFearless/musicLyricsMaker
+    cd musicLyricsMaker
+    ```
 
-```console
-npm i
-```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
 
-**Start Preview**
+## Running Remotion Studio
 
-```console
+To run Remotion Studio and preview the music lyric video, use the following command:
+```bash
 npm run dev
 ```
 
-**Render video**
+## Creating Video
 
-```console
-npx remotion render
+To create a music lyric video, use the following command:
+```bash
+npm run build
 ```
 
-**Upgrade Remotion**
+## Project Structure
 
-```console
-npx remotion upgrade
-```
+- `src/ThumbnailCreator.tsx`: Component for creating video thumbnails.
+- `src/Root.tsx`: Main component that sets up the composition and default properties.
+- `src/Music.tsx`: Component for creating music lyric videos.
+- `render.js`: Script for rendering videos and thumbnails.
+- `.github/workflows/render.yml`: GitHub Actions workflow for automatically rendering videos.
+- `.github/workflows/Matrix.yml`: GitHub Actions workflow for rendering videos using matrix renderer.
 
-## Docs
+## Contribution
 
-Get started with Remotion by reading the [fundamentals page](https://www.remotion.dev/docs/the-fundamentals).
-
-## Help
-
-We provide help on our [Discord server](https://discord.gg/6VzzNDwUwV).
-
-## Issues
-
-Found an issue with Remotion? [File an issue here](https://github.com/remotion-dev/remotion/issues/new).
+If you want to contribute to this project, please create a pull request or open a new issue.
 
 ## License
 
-Note that for some entities a company license is needed. [Read the terms here](https://github.com/remotion-dev/remotion/blob/main/LICENSE.md).
+This project is licensed under the BSD+Patent license.
+
+## Notice
+
+For any distribution or rendered video, please include credits to the owner or a link to this repository.
