@@ -35,3 +35,4 @@ jobs:
       remotion_entry_point: src/index.ts
       props: ${{ github.event.inputs.props }}
       scale: ${{ github.event.inputs.scale }}
+      id: ${{ github.event.inputs.identifier }}
