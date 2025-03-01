@@ -5,8 +5,8 @@ on:
     inputs:
       scale:
         description: 'Scale'
-        type: number
-        default: 1
+        type: string
+        default: "1"
         required: true
       identifier:
         description: 'Identifier'
