@@ -25,7 +25,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             const duration = fps / 2;
             animation.push(
                 Move({ y: 0, initialY: 50, start, duration }),
-                Scale({ by: 1, initial: 0.85, start, duration })
+                Scale({ by: 1, initial: 0.85, start, duration, initialZ: 1 })
             );
         })
         return animation;
@@ -66,33 +66,36 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
                     <div style={{ backgroundColor: 'black', opacity: 0.5, position: 'absolute', width: '100%', height: '100%' }} />
                 </AbsoluteFill>
                 <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
-                    <Animated absolute out={fps * 8} animations={[
+                    <Animated animations={[
                         Move({ y: 0, initialY: -250, duration: fps * 3 }),
-                        Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
-                        Move({ y: -250, start: fps * 7, duration: fps })
+                        Move({ y: -250, start: fps * 7, duration: fps * 2 }),
+                        Scale({ by: 0.5, start: fps * 7, duration: fps * 2 }),
                     ]}>
-                        <Img src={`https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
-                    </Animated>
-                    <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow:'hidden' }}>
-                        <Animated out={fps * 8} animations={[
-                            Move({ y: 0, initialY: -250, duration: fps * 3 }),
-                            Move({ x: 0, initialX: -1000, duration: fps * 3 }),
-                            Move({ y: -250, start: fps * 7, duration: fps })
+                        <Animated absolute out={fps * 8} animations={[
+                            Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
                         ]}>
-                            <div style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold' }}>
-                                {props.ytmMusicInfo}
-                            </div>
+                            <Img src={`https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
                         </Animated>
-                    </div>
+                        <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow: 'hidden' }}>
+                            <Animated out={fps * 8} animations={[
+                                Move({ x: -1000, duration: 1 }),
+                                Move({ x: 1000, duration: fps * 3, start: fps * 2 }),
+                            ]}>
+                                <div style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold' }}>
+                                    {props.ytmMusicInfo}
+                                </div>
+                            </Animated>
+                        </div>
+                    </Animated>
                 </div>
                 <div style={{ fontSize: 45, textAlign: 'center', opacity: 0.7, color: 'white' }}>
                     {previousLyrics}
                 </div>
-                <Animated animations={currentLyricsAnimation} style={{ zIndex: 9999 }} >
+                <Animated animations={currentLyricsAnimation} style={{ zIndex: 999 }} >
                     <div style={{
                         fontSize: 80, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold', color: 'white',
                         textShadow: '0 0 5px #00b7ff, 0 0 10px #00b7ff, 0 0 15px #00b7ff, 0 0 20px #00b7ff, 0 0 25px #00b7ff',
-                        marginRight: 120, marginLeft: 120,
+                        marginRight: 120, marginLeft: 120, zIndex: 999
                     }}>
                         {currentLyrics}
                     </div>
