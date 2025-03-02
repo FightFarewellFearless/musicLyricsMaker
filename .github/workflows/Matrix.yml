@@ -30,7 +30,7 @@ jobs:
   call-workflow-in-another-repo:
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
     with:
-      num_of_workers: 10
+      num_of_workers: 20
       remotion_composition_id: MusicLyrics
       remotion_entry_point: src/index.ts
       props: ${{ github.event.inputs.props }}
