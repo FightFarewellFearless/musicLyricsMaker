@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { defaultThumbnailSchema } from "./Root";
-import { AbsoluteFill, Img, Video } from "remotion";
+import { AbsoluteFill, Img } from "remotion";
+import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
 export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailSchema>) {
   return (
@@ -15,7 +16,7 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
               height: '100%',
               filter: 'blur(3px) saturate(180%)'
             }} />) : (
-            <Video src={props.background.video} style={{
+            <LoopableOffthreadVideo src={props.background.video} style={{
               objectFit: 'cover',
               width: '100%',
               height: '100%',
