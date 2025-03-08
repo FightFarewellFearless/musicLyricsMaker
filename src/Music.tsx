@@ -4,6 +4,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
 import { Animated, Animation, Move, Scale, Rotate, Ease } from "remotion-animated";
 import { z } from 'zod';
+import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
   const music = `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
@@ -69,7 +70,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
           {typeof props.background === 'string' ? (
             <Img src={props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           ) : (
-            <Video muted loop src={props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            <LoopableOffthreadVideo muted loop src={props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           )}
           <div style={{ backgroundColor: 'black', opacity: 0.5, position: 'absolute', width: '100%', height: '100%' }} />
         </AbsoluteFill>

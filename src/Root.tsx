@@ -33,7 +33,7 @@ const defaultProps: DefaultProps = {
   musicTitle: "Rindu rumah",
   syncronizeLyrics: [],
   background: {
-    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
+    video: "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/1239690/ac2ab845a38bb23cae28c2b1d49afe7f8c81ad30.mp4 "
   },
   ytmMusicInfo: '',
   ytmThumbnail: '',
@@ -49,7 +49,7 @@ export type DefaultThumbnailProps = {
 const defaultThumbnailProps: DefaultThumbnailProps = {
   musicTitle: "Rindu rumah",
   background: {
-    video: "https://static.moewalls.com/videos/preview/2023/lofi-anime-girl-drinking-coffee-preview.mp4"
+    video: "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/1239690/ac2ab845a38bb23cae28c2b1d49afe7f8c81ad30.mp4 "
   },
 };
 export const defaultThumbnailSchema = z.object({

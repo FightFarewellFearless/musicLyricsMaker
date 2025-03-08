@@ -13,7 +13,7 @@ import {
 } from 'remotion';
  
 const LoopedOffthreadVideo: React.FC<RemotionOffthreadVideoProps> = (props) => {
-  const [duration, setDuration] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number>(5);
   const [handle] = useState(() => delayRender());
   const {fps} = useVideoConfig();
  
@@ -41,10 +41,6 @@ const LoopedOffthreadVideo: React.FC<RemotionOffthreadVideoProps> = (props) => {
       controller.abort();
     };
   }, [handle, props.src]);
- 
-  if (duration === null) {
-    return null;
-  }
  
   return (
     <Loop durationInFrames={Math.floor(duration * fps)}>
