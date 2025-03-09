@@ -50,7 +50,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     fps,
     frame,
     audioData,
-    numberOfSamples: 64,
+    numberOfSamples: 32,
     optimizeFor: 'accuracy',
   });
   const minDb = -60;

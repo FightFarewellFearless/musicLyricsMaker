@@ -33,7 +33,7 @@ const defaultProps: DefaultProps = {
   musicTitle: "Rindu rumah",
   syncronizeLyrics: [],
   background: {
-    video: "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/1239690/ac2ab845a38bb23cae28c2b1d49afe7f8c81ad30.mp4 "
+    video: "https://static.moewalls.com/videos/preview/2025/away-from-home-preview.webm"
   },
   ytmMusicInfo: '',
   ytmThumbnail: '',
