@@ -77,10 +77,10 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
         <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
           <Animated animations={[
             Move({ y: 0, initialY: -250, duration: fps * 3 }),
-            Move({ y: -250, start: fps * 7, duration: fps * 2 }),
-            Scale({ by: 0.5, start: fps * 7, duration: fps * 2 }),
+            Move({ y: -250, start: fps * 10, duration: fps * 2 }),
+            // Scale({ by: 0.5, start: fps * 7, duration: fps * 2 }),
           ]}>
-            <Animated absolute out={fps * 8} animations={[
+            <Animated absolute out={fps * 12} animations={[
               Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
             ]}>
               <Img src={`https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
@@ -89,6 +89,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
               <Animated out={fps * 8} animations={[
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: 1 }),
                 Move({ x: (ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 2 }),
+                Move({ x: -(ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 7 }),
               ]}>
                 <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold' }}>
                   {props.ytmMusicInfo}
