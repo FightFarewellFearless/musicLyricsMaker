@@ -50,10 +50,10 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     fps,
     frame,
     audioData,
-    numberOfSamples: 32,
+    numberOfSamples: 64,
     optimizeFor: 'accuracy',
   });
-  const minDb = -60;
+  const minDb = -100;
   const maxDb = -10;
   const clampNumberBetween0and1 = (num: number) => Math.min(Math.max(num, 0), 1);
   const visualization = frequencyData.map((value) => {
