@@ -9,3 +9,4 @@ Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.setChromiumMultiProcessOnLinux(true);
 Config.setConcurrency(4);
+Config.setChromiumDisableWebSecurity(true);
