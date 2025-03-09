@@ -113,8 +113,8 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
     { signal: abortSignal }
   ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
-    .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2))
-    .toSorted((a, b) => a.duration - b.duration);
+    .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2)
+    .toSorted((a, b) => a.duration - b.duration));
 
   const searchData = data[props.searchLyricsIndex];
 
