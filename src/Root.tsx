@@ -1,4 +1,4 @@
-import { CalculateMetadataFunction, Composition, staticFile, Still } from "remotion";
+import { CalculateMetadataFunction, Composition, getStaticFiles, staticFile, Still } from "remotion";
 import tr from 'googletrans';
 import Music from "./Music";
 import fetch from "cross-fetch";
@@ -106,58 +106,64 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     thumbnail: string;
     duration: number;
   }
-  const ytmSearchResult: YTMSearch = (
-    process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch(
-      staticFile('search.json')
-    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]) : 
-    await fetch(
-    'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
-    { signal: abortSignal }
-  ).then(a => a.json()).then((a: YTMSearch[]) => a[0])
-);
-  const data: APIRes[] = await fetch(
-    "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
-    { signal: abortSignal }
-  ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
-    .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2)
-    // @ts-ignore
-    .toSorted((a, b) => a.duration - b.duration));
+  let syncronizeLyrics: { start: number; text: string }[] = [];
+  let searchData: APIRes;
+  let ytmSearchResult: YTMSearch;
 
-  const searchData = data[props.searchLyricsIndex];
+  if (process.env.REMOTION_USE_LOCAL_DIR !== 'yes') {
+    ytmSearchResult = await fetch(
+      'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
+      { signal: abortSignal }
+    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
+    const data: APIRes[] = await fetch(
+      "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
+      { signal: abortSignal }
+    ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
+      .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2)
+      // @ts-ignore
+      .toSorted((a, b) => a.duration - b.duration));
 
-  const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
-  const syncronizeLyrics: { start: number; text: string }[] = [];
-  syncronizeLyricsRaw.forEach(a => {
-    try {
-      const start = a.split("[")[1].split("]")[0];
-      const text = a.split("]")[1];
-      const [minutes, seconds] = start.split(":");
-      syncronizeLyrics.push({
-        start: (Number(minutes) * 60) + Number(seconds),
-        text,
-      });
-    } catch { };
-  });
+    searchData = data[props.searchLyricsIndex];
 
-  const translate = await tr(searchData.syncedLyrics);
-  // @ts-ignore
-  const shouldRomanize: boolean = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3] as boolean;
-
-  if(shouldRomanize) { 
-    for(let i = 0;i < syncronizeLyrics.length;i++) {
+    const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
+    syncronizeLyricsRaw.forEach(a => {
       try {
-        const romanize = await tr(syncronizeLyrics[i].text);
-        // @ts-ignore
-        syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
-      } catch {}
+        const start = a.split("[")[1].split("]")[0];
+        const text = a.split("]")[1];
+        const [minutes, seconds] = start.split(":");
+        syncronizeLyrics.push({
+          start: (Number(minutes) * 60) + Number(seconds),
+          text,
+        });
+      } catch { };
+    });
+
+    const translate = await tr(searchData.syncedLyrics);
+    // @ts-ignore
+    const shouldRomanize: boolean = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3] as boolean;
+
+    if (shouldRomanize) {
+      for (let i = 0; i < syncronizeLyrics.length; i++) {
+        try {
+          const romanize = await tr(syncronizeLyrics[i].text);
+          // @ts-ignore
+          syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
+        } catch { }
+      }
     }
+  } else {
+    searchData = await fetch(staticFile('searchData.json')).then(a => a.json());
+    ytmSearchResult = await fetch(
+      staticFile('search.json')
+    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
+    syncronizeLyrics = await fetch(staticFile('syncronizeLyrics.json')).then(a => a.json());
   }
 
-  let {background} = props;
+  let { background } = props;
 
   if (props.background === 'default' && typeof props.background === 'string' && process.env.REMOTION_USE_LOCAL_DIR !== 'yes') {
     background = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
-    .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url) : await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
+      .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url) : await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
   }
 
   return {
