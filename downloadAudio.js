@@ -53,7 +53,7 @@ export async function downloadMusicFile(title) {
         // @ts-ignore
         .toSorted((a, b) => a.duration - b.duration));
 
-    const searchData = data[0]; // props.searchLyricsIndex
+    const searchData = data[props.searchLyricsIndex]; // props.searchLyricsIndex
     fs.writeFileSync('./public/searchData.json', JSON.stringify(searchData));
 
     const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
