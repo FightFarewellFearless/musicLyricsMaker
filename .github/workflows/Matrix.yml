@@ -47,6 +47,7 @@ jobs:
           path: |
             ./public/music.mp3
   call-workflow-in-another-repo:
+    needs: [download-audio]
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
     with:
       num_of_workers: 10
