@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { defaultThumbnailSchema } from "./Root";
-import { AbsoluteFill, Img, Video } from "remotion";
+import { AbsoluteFill, getStaticFiles, Img, Video } from "remotion";
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
 export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailSchema>) {
@@ -10,13 +10,13 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
       <AbsoluteFill>
         {
           typeof props.background === 'string' ? (
-            <Img src={props.background} style={{
+            <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background} style={{
               objectFit: 'cover',
               width: '100%',
               height: '100%',
               filter: 'blur(3px) saturate(180%)'
             }} />) : (
-            <LoopableOffthreadVideo src={props.background.video} style={{
+            <LoopableOffthreadVideo src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background.video} style={{
               objectFit: 'cover',
               width: '100%',
               height: '100%',

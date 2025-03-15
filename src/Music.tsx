@@ -1,4 +1,4 @@
-import { AbsoluteFill, Audio, Img, staticFile, useCurrentFrame, useCurrentScale, useVideoConfig, Video } from "remotion";
+import { AbsoluteFill, Audio, getStaticFiles, Img, staticFile, useCurrentFrame, useCurrentScale, useVideoConfig, Video } from "remotion";
 import { DefaultSchema } from "./Root";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
@@ -68,9 +68,9 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
       <AbsoluteFill style={{ backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
         <AbsoluteFill>
           {typeof props.background === 'string' ? (
-            <Img src={props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           ) : (
-            <LoopableOffthreadVideo muted loop src={props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            <LoopableOffthreadVideo muted loop src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           )}
           <div style={{ backgroundColor: 'black', opacity: 0.5, position: 'absolute', width: '100%', height: '100%' }} />
         </AbsoluteFill>
@@ -83,7 +83,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             <Animated absolute out={fps * 12} animations={[
               Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
             ]}>
-              <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('ytThumb.jpg') : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
+              <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('ytThumb'))!.src : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
             </Animated>
             <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow: 'hidden' }}>
               <Animated out={fps * 8} animations={[

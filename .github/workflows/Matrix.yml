@@ -25,7 +25,7 @@ on:
           "searchLyricsIndex": 0
           }
 jobs:
-  download-audio:
+  mempersiapkan-data-yang-diperlukan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
@@ -45,7 +45,7 @@ jobs:
           path: |
             ./public
   call-workflow-in-another-repo:
-    needs: [download-audio]
+    needs: [mempersiapkan-data-yang-diperlukan]
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
     with:
       num_of_workers: 10
