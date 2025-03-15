@@ -2,7 +2,8 @@ import { Innertube } from 'youtubei.js';
 import fs from 'fs';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
-import tr from 'googletrans';
+import trr from 'googletrans';
+const tr = trr.default;
 import props from './props.json' with { type: "json" };
 
 const innertube = await Innertube.create({
