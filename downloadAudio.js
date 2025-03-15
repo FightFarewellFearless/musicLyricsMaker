@@ -2,6 +2,8 @@ import { Innertube } from 'youtubei.js';
 import fs from 'fs';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
+import props from './props.json';
+
 const innertube = await Innertube.create({
     cookie: process.env.YT_COOKIE
 });
@@ -17,5 +19,5 @@ export async function downloadMusicFile(title) {
 };
 
 downloadMusicFile(
-    require('props.json').musicTitle
+    props.musicTitle
 );
