@@ -39,7 +39,8 @@ jobs:
         shell: bash
         env:
           YT_COOKIE: ${{ secrets.ytcookie }}
-        run: node downloadAudio ${{ github.event.inputs.props }}
+          PROPS: ${{ github.event.inputs.props }}
+        run: echo $PROPS > props.json && node downloadAudio
       - uses: actions/upload-artifact@main
         with:
           name: audioDownload

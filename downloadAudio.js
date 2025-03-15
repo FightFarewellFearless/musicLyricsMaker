@@ -17,5 +17,5 @@ export async function downloadMusicFile(title) {
 };
 
 downloadMusicFile(
-    JSON.parse(process.argv.slice(2).join(' ')).musicTitle
+    require('props.json').musicTitle
 );
