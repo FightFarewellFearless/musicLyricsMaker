@@ -108,7 +108,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
   const ytmSearchResult: YTMSearch = (
     process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch(
       staticFile('search.json')
-    ).then(a => a.json()).then() : 
+    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]) : 
     await fetch(
     'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
     { signal: abortSignal }
