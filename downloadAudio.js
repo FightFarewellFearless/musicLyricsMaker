@@ -14,6 +14,7 @@ export async function downloadMusicFile(title) {
         type: 'audio'
     });
     console.log('Downloading', video.songs.contents[0].title, '-', video.songs.contents[0].artists.map(a => a.name).join(', '));
+    fs.writeFileSync('./public/search.json', JSON.stringify(video));
     const file = fs.createWriteStream('./public/music.mp3');
     await finished(Readable.fromWeb(download).pipe(file));
 };

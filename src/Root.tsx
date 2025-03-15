@@ -1,4 +1,4 @@
-import { CalculateMetadataFunction, Composition, Still } from "remotion";
+import { CalculateMetadataFunction, Composition, staticFile, Still } from "remotion";
 import Music from "./Music";
 import fetch from "cross-fetch";
 import { z } from "zod";
@@ -106,6 +106,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     duration: number;
   }
   const ytmSearchResult: YTMSearch = await fetch(
+    process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('search.json') :
     'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
     { signal: abortSignal }
   ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
@@ -114,6 +115,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     { signal: abortSignal }
   ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
     .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2)
+    // @ts-ignore
     .toSorted((a, b) => a.duration - b.duration));
 
   const searchData = data[props.searchLyricsIndex];
@@ -135,7 +137,8 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
   let {background} = props;
 
   if (props.background === 'default' && typeof props.background === 'string') {
-    background = await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
+    background = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
+    .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url) : await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
   }
 
   return {

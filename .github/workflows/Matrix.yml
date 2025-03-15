@@ -45,7 +45,7 @@ jobs:
         with:
           name: audioDownload
           path: |
-            ./public/music.mp3
+            ./public
   call-workflow-in-another-repo:
     needs: [download-audio]
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
