@@ -2,7 +2,7 @@ import { Innertube } from 'youtubei.js';
 import fs from 'fs';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
-import props from './props.json';
+import props from './props.json' with { type: "json" };
 
 const innertube = await Innertube.create({
     cookie: process.env.YT_COOKIE
