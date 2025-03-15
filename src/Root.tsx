@@ -1,4 +1,5 @@
 import { CalculateMetadataFunction, Composition, staticFile, Still } from "remotion";
+import tr from 'googletrans';
 import Music from "./Music";
 import fetch from "cross-fetch";
 import { z } from "zod";
@@ -137,6 +138,20 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
       });
     } catch { };
   });
+
+  const translate = await tr(searchData.syncedLyrics);
+  // @ts-ignore
+  const shouldRomanize: boolean = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3] as boolean;
+
+  if(shouldRomanize) { 
+    for(let i = 0;i < syncronizeLyrics.length;i++) {
+      try {
+        const romanize = await tr(syncronizeLyrics[i].text);
+        // @ts-ignore
+        syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
+      } catch {}
+    }
+  }
 
   let {background} = props;
 
