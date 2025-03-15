@@ -54,6 +54,7 @@ export async function downloadMusicFile(title) {
         .toSorted((a, b) => a.duration - b.duration));
 
     const searchData = data[0]; // props.searchLyricsIndex
+    fs.writeFileSync('./public/searchData.json', JSON.stringify(searchData));
 
     const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
     syncronizeLyricsRaw.forEach(a => {
