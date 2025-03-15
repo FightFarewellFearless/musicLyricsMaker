@@ -19,9 +19,7 @@ on:
           {
           "musicTitle": "Everything goes on - Porter Robinson",
           "syncronizeLyrics": [],
-          "background": {
-            "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
-          },
+          "background": "random",
           "ytmMusicInfo": "",
           "ytmThumbnail": "",
           "searchLyricsIndex": 0
