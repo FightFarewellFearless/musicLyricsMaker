@@ -105,11 +105,15 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     thumbnail: string;
     duration: number;
   }
-  const ytmSearchResult: YTMSearch = await fetch(
-    process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('search.json') :
+  const ytmSearchResult: YTMSearch = (
+    process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch(
+      staticFile('search.json')
+    ).then(a => a.json()).then() : 
+    await fetch(
     'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
     { signal: abortSignal }
-  ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
+  ).then(a => a.json()).then((a: YTMSearch[]) => a[0])
+);
   const data: APIRes[] = await fetch(
     "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
     { signal: abortSignal }

@@ -9,12 +9,20 @@ const innertube = await Innertube.create({
 });
 
 export async function downloadMusicFile(title) {
-    const video = await innertube.music.search(title);
+    const video = await innertube.music.search(title, {
+        type: 'song'
+    });
     const download = await innertube.download(video.songs.contents[0].id, {
         type: 'audio'
     });
     console.log('Downloading', video.songs.contents[0].title, '-', video.songs.contents[0].artists.map(a => a.name).join(', '));
-    fs.writeFileSync('./public/search.json', JSON.stringify(video));
+    fs.writeFileSync('./public/search.json', JSON.stringify(video.songs.contents.map(song => ({
+        id: song.id,
+        title: song.title,
+        artists: song.artists.map(a => a.name),
+        thumbnail: song.thumbnails[0].url,
+        duration: song.duration?.seconds
+    }))));
     const file = fs.createWriteStream('./public/music.mp3');
     await finished(Readable.fromWeb(download).pipe(file));
 };
