@@ -19,7 +19,7 @@ on:
           {
           "musicTitle": "Everything goes on - Porter Robinson",
           "syncronizeLyrics": [],
-          "background": "random",
+          "background": "default",
           "ytmMusicInfo": "",
           "ytmThumbnail": "",
           "searchLyricsIndex": 0
