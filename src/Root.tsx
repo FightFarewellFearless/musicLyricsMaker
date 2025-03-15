@@ -155,7 +155,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
 
   let {background} = props;
 
-  if (props.background === 'default' && typeof props.background === 'string') {
+  if (props.background === 'default' && typeof props.background === 'string' && process.env.REMOTION_USE_LOCAL_DIR !== 'yes') {
     background = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
     .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url) : await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
   }
