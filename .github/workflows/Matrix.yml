@@ -27,6 +27,24 @@ on:
           "searchLyricsIndex": 0
           }
 jobs:
+  download-audio:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      
+      - name: install dependencies
+        run: npm i
+
+      - name: run node
+        shell: bash
+        env:
+          YT_COOKIE: ${{ secrets.ytcookie }}
+        run: node downloadAudio ${{ github.event.inputs.props }}
+      - uses: actions/upload-artifact@main
+        with:
+          name: audioDownload
+          path: |
+            ./public/music.mp3
   call-workflow-in-another-repo:
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
     with:

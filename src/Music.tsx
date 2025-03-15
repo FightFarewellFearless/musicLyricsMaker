@@ -1,4 +1,4 @@
-import { AbsoluteFill, Audio, Img, useCurrentFrame, useCurrentScale, useVideoConfig, Video } from "remotion";
+import { AbsoluteFill, Audio, Img, staticFile, useCurrentFrame, useCurrentScale, useVideoConfig, Video } from "remotion";
 import { DefaultSchema } from "./Root";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAudioData, visualizeAudio } from '@remotion/media-utils';
@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
-  const music = `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
+  const music = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('music.mp3') : `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const duration = frame / fps;
