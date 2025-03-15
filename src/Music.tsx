@@ -83,7 +83,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             <Animated absolute out={fps * 12} animations={[
               Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
             ]}>
-              <Img src={props.ytmThumbnail} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
+              <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('ytThumb.jpg') : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
             </Animated>
             <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow: 'hidden' }}>
               <Animated out={fps * 8} animations={[

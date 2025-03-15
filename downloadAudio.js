@@ -23,6 +23,7 @@ export async function downloadMusicFile(title) {
         thumbnail: song.thumbnails[0].url,
         duration: song.duration?.seconds
     }))));
+    fetch(song.thumbnails[0].url).then(a => a.arrayBuffer()).then(a => Buffer.from(a)).then(a => fs.writeFileSync('./public/ytThumb.jpg'));
     const file = fs.createWriteStream('./public/music.mp3');
     await finished(Readable.fromWeb(download).pipe(file));
 };
