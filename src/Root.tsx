@@ -4,11 +4,16 @@ import Music from "./Music";
 import fetch from "cross-fetch";
 import { z } from "zod";
 import ThumbnailCreator from "./ThumbnailCreator";
+import { checkRomanizationIsNeeded, romanize, translateLyric } from "./googletranslate";
 
 // Each <Composition> is an entry in the sidebar!
 export type DefaultProps = {
   musicTitle: string;
   syncronizeLyrics: {
+    start: number;
+    text: string;
+  }[];
+  translateSyncronizeLyrics: {
     start: number;
     text: string;
   }[];
@@ -18,6 +23,7 @@ export type DefaultProps = {
   ytmMusicInfo: string;
   ytmThumbnail: string;
   searchLyricsIndex: number;
+  translateTo: string | "none";
 }
 export const DefaultSchema = z.object({
   musicTitle: z.string(),
@@ -25,21 +31,26 @@ export const DefaultSchema = z.object({
     start: z.number(),
     text: z.string(),
   })),
+  translateSyncronizeLyrics: z.array(z.object({
+    start: z.number(),
+    text: z.string(),
+  })),
   background: z.union([z.string(), z.object({ video: z.string() })]),
   ytmMusicInfo: z.string(),
   ytmThumbnail: z.string(),
   searchLyricsIndex: z.number().default(0),
+  translateTo: z.string(),
 })
 const defaultProps: DefaultProps = {
-  musicTitle: "Rindu rumah",
-  syncronizeLyrics: [],
-  background: {
-    video: "https://static.moewalls.com/videos/preview/2025/away-from-home-preview.webm"
-  },
-  ytmMusicInfo: '',
-  ytmThumbnail: '',
-  searchLyricsIndex: 0,
-};
+  "musicTitle": "Nothing's gonna change my love for you",
+  "syncronizeLyrics": [],
+  "translateSyncronizeLyrics": [],
+  "background": "default",
+  "ytmMusicInfo": "",
+  "ytmThumbnail": "",
+  "searchLyricsIndex": 0,
+  "translateTo": "none"
+}
 
 export type DefaultThumbnailProps = {
   musicTitle: string;
@@ -48,10 +59,8 @@ export type DefaultThumbnailProps = {
   } | string;
 };
 const defaultThumbnailProps: DefaultThumbnailProps = {
-  musicTitle: "Rindu rumah",
-  background: {
-    video: "https://cdn.akamai.steamstatic.com/steamcommunity/public/images/items/1239690/ac2ab845a38bb23cae28c2b1d49afe7f8c81ad30.mp4 "
-  },
+  musicTitle: "Nothing's gonna change my love for you",
+  background: "default",
 };
 export const defaultThumbnailSchema = z.object({
   musicTitle: z.string(),
@@ -106,7 +115,9 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     thumbnail: string;
     duration: number;
   }
-  let syncronizeLyrics: { start: number; text: string }[] = [];
+  type SYNCLRC = { start: number; text: string }[];
+  let syncronizeLyrics: SYNCLRC = [];
+  let translateSyncronizeLyrics: SYNCLRC = [];
   let searchData: APIRes;
   let ytmSearchResult: YTMSearch;
 
@@ -138,25 +149,23 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
       } catch { };
     });
 
-    const translate = await tr(searchData.syncedLyrics);
-    // @ts-ignore
-    const shouldRomanize: boolean = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3] as boolean;
+    const shouldRomanize = await checkRomanizationIsNeeded(searchData.syncedLyrics);
 
-    if (shouldRomanize) {
-      for (let i = 0; i < syncronizeLyrics.length; i++) {
-        try {
-          const romanize = await tr(syncronizeLyrics[i].text);
-          // @ts-ignore
-          syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
-        } catch { }
-      }
+    if(props.translateTo !== 'none') {
+      translateSyncronizeLyrics = await translateLyric(syncronizeLyrics, props.translateTo);
     }
+    if (shouldRomanize) {
+     syncronizeLyrics = await romanize(syncronizeLyrics);
+    }
+    
+
   } else {
     searchData = await fetch(staticFile('searchData.json')).then(a => a.json());
     ytmSearchResult = await fetch(
       staticFile('search.json')
     ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
     syncronizeLyrics = await fetch(staticFile('syncronizeLyrics.json')).then(a => a.json());
+    translateSyncronizeLyrics = await fetch(staticFile('translateSyncronizeLyrics.json')).then(a => a.json());
   }
 
   let { background } = props;
@@ -173,6 +182,7 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
     props: {
       ...props,
       syncronizeLyrics: [{ start: 0, text: `[${searchData.trackName} - ${searchData.artistName}]` }, ...syncronizeLyrics],
+      translateSyncronizeLyrics,
       background,
       ytmThumbnail: ytmSearchResult.thumbnail,
       ytmMusicInfo: `${searchData.trackName} - ${searchData.artistName}`,

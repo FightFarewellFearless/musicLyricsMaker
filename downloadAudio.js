@@ -5,6 +5,7 @@ import { finished } from 'stream/promises';
 import trr from 'googletrans';
 const tr = trr.default;
 import props from './props.json' with { type: "json" };
+import { romanize, translateLyric } from './src/googletranslate.js';
 
 const innertube = await Innertube.create({
     cookie: process.env.YT_COOKIE
@@ -44,7 +45,7 @@ export async function downloadMusicFile(title) {
 
     // sync lyrics
 
-    const syncronizeLyrics = [];
+    let syncronizeLyrics = [];
 
     const data = await fetch(
         "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult[0].title + " " + ytmSearchResult[0].artists.join(" "))
@@ -73,14 +74,16 @@ export async function downloadMusicFile(title) {
     // @ts-ignore
     const shouldRomanize = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3];
 
+    if(props.translateTo !== 'none') {
+        fs.writeFileSync('./public/translateSyncronizeLyrics.json', JSON.stringify(
+            await translateLyric(syncronizeLyrics, props.translateTo)
+        ))
+    } else {
+        fs.writeFileSync('./public/translateSyncronizeLyrics.json', '[]');
+    };
+
     if (shouldRomanize) {
-        for (let i = 0; i < syncronizeLyrics.length; i++) {
-            try {
-                const romanize = await tr(syncronizeLyrics[i].text);
-                // @ts-ignore
-                syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
-            } catch { }
-        }
+        syncronizeLyrics = await romanize(syncronizeLyrics);
     }
 
     fs.writeFileSync('./public/syncronizeLyrics.json', JSON.stringify(syncronizeLyrics));

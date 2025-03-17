@@ -2,6 +2,8 @@ import { z } from "zod";
 import { defaultThumbnailSchema } from "./Root";
 import { AbsoluteFill, getStaticFiles, Img, Video } from "remotion";
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
+import {loadFont} from "@remotion/google-fonts/NotoSansJP";
+const {fontFamily: fontFamilyJP} = loadFont();
 
 export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailSchema>) {
   return (
@@ -70,7 +72,7 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
             margin: 0,
             lineHeight: 1.1,
             letterSpacing: '-0.03em',
-            fontFamily: 'Poppins, sans-serif',
+            fontFamily: 'Poppins, sans-serif, ' + fontFamilyJP,
           }}>
             {props.musicTitle}
           </h1>
@@ -82,7 +84,7 @@ export default function ThumbnailCreator(props: z.infer<typeof defaultThumbnailS
           color: 'rgba(255,255,255,0.8)',
           fontSize: '3rem',
           textAlign: 'center',
-          fontFamily: 'Poppins, sans-serif',
+          fontFamily: 'Poppins, sans-serif, ' + fontFamilyJP,
         }}>
           Lyrics Video
         </div>

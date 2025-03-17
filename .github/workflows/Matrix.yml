@@ -11,18 +11,20 @@ on:
       identifier:
         description: 'Identifier'
         type: string
-        required: false
+        required: true
       props:
         description: Video Props
         required: true
         default: |
           {
-          "musicTitle": "Everything goes on - Porter Robinson",
-          "syncronizeLyrics": [],
-          "background": "default",
-          "ytmMusicInfo": "",
-          "ytmThumbnail": "",
-          "searchLyricsIndex": 0
+            "musicTitle": "Nothing's gonna change my love for you",
+            "translateTo": "none",
+            "syncronizeLyrics": [],
+            "translateSyncronizeLyrics": [],
+            "background": "default",
+            "ytmMusicInfo": "",
+            "ytmThumbnail": "",
+            "searchLyricsIndex": 0
           }
 jobs:
   mempersiapkan-data-yang-diperlukan:

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2018",
+    "allowJs": true,
     "module": "commonjs",
     "jsx": "react-jsx",
     "strict": true,

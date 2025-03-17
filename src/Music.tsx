@@ -6,6 +6,9 @@ import { Animated, Animation, Move, Scale, Rotate, Ease } from "remotion-animate
 import { z } from 'zod';
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
+import {loadFont} from "@remotion/google-fonts/NotoSansJP";
+const {fontFamily: fontFamilyJP} = loadFont();
+
 export default function Music(props: z.infer<typeof DefaultSchema>) {
   const music = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('music.mp3') : `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
   const frame = useCurrentFrame();
@@ -17,6 +20,10 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
   currentLyrics = currentLyrics === '' || currentLyrics === ' ' ? '♫' : currentLyrics;
   const previousLyrics = lyricsOnCurrentDuration.slice(-2)[0]?.text || "";
   const nextLyrics = props.syncronizeLyrics[lyricsOnCurrentDuration.lastIndexOf(lyricsOnCurrentDuration[lyricsOnCurrentDuration.length - 1]) + 1]?.text || "";
+
+  const translateLyricsOnCurrentDuration = props.translateSyncronizeLyrics.filter((a) => duration >= a.start);
+  let translateCurrentLyrics = translateLyricsOnCurrentDuration.slice(-1)[0]?.text || "";
+
   const audioData = useAudioData(music);
 
 
@@ -72,7 +79,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
           ) : (
             <LoopableOffthreadVideo muted loop src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           )}
-          <div style={{ backgroundColor: 'black', opacity: 0.5, position: 'absolute', width: '100%', height: '100%' }} />
+          <div style={{ backgroundColor: 'black', opacity: 0.6, position: 'absolute', width: '100%', height: '100%' }} />
         </AbsoluteFill>
         <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
           <Animated animations={[
@@ -91,26 +98,34 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
                 Move({ x: (ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 2 }),
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 7 }),
               ]}>
-                <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold' }}>
+                <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily:  fontFamilyJP, fontWeight: 'bold' }}>
                   {props.ytmMusicInfo}
                 </div>
               </Animated>
             </div>
           </Animated>
         </div>
-        <div style={{ fontSize: 45, textAlign: 'center', opacity: 0.7, color: 'white' }}>
+        <div style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
           {previousLyrics}
         </div>
         <Animated animations={currentLyricsAnimation} style={{ zIndex: 999 }} >
           <div style={{
-            fontSize: 80, textAlign: 'center', fontFamily: 'sans', fontWeight: 'bold', color: 'white',
+            fontSize: 80, textAlign: 'center', fontFamily:  fontFamilyJP, fontWeight: 'bold', color: 'white',
             textShadow: '0 0 5px #00b7ff, 0 0 10px #00b7ff, 0 0 15px #00b7ff, 0 0 20px #00b7ff, 0 0 25px #00b7ff',
-            marginRight: 120, marginLeft: 120, zIndex: 999
+            marginRight: 20, marginLeft: 20, zIndex: 999
           }}>
             {currentLyrics}
+            <div style={{
+              fontSize: 45,
+              fontWeight: 'normal',
+              fontStyle: 'italic',
+              textShadow: '0 0 2px #ff7300, 0 0 5px #ff7300, 0 0 7px #ff7300, 0 0 10px #ff7300, 0 0 12px #ff7300',
+            }}>
+              {translateCurrentLyrics}
+            </div>
           </div>
         </Animated>
-        <div style={{ fontSize: 45, textAlign: 'center', opacity: 0.7, color: 'white' }}>
+        <div style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
           {nextLyrics}
         </div>
         <div style={{ height: 100, alignItems: 'flex-end', display: 'flex', flexDirection: 'row', gap: 5, position: 'absolute', bottom: 35 }}>
