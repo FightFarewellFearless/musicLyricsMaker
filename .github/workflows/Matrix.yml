@@ -17,7 +17,7 @@ on:
         required: true
         default: |
           {
-            "musicTitle": "Nothing's gonna change my love for you",
+            "musicTitle": "",
             "translateTo": "none",
             "syncronizeLyrics": [],
             "translateSyncronizeLyrics": [],

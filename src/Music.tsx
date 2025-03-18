@@ -6,8 +6,8 @@ import { Animated, Animation, Move, Scale, Rotate, Ease } from "remotion-animate
 import { z } from 'zod';
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 
-import {loadFont} from "@remotion/google-fonts/NotoSansJP";
-const {fontFamily: fontFamilyJP} = loadFont();
+import { loadFont } from "@remotion/google-fonts/NotoSansJP";
+const { fontFamily: fontFamilyJP } = loadFont();
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
   const music = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? staticFile('music.mp3') : `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(props.musicTitle)}`;
@@ -49,6 +49,18 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     return animation;
   }, []);
 
+  const currentTranslateLyricsAnimation = useMemo(() => {
+    const animation: Animation[] = [];
+    props.translateSyncronizeLyrics.forEach(a => {
+      const start = a.start * fps;
+      const duration = fps / 2;
+      animation.push(
+        Scale({ by: 1, initial: 0.65, start, duration, initialZ: 1 }),
+      );
+    })
+    return animation;
+  }, []);
+
   const currentTimeDuration = `${String(Math.floor(duration / 60)).padStart(2, '0')}:${String(Math.floor(duration % 60)).padStart(2, '0')}`;
   const totalDuration = `${String(Math.floor(durationInFrames / fps / 60)).padStart(2, '0')}:${String(Math.floor(durationInFrames / fps % 60)).padStart(2, '0')}`;
 
@@ -57,11 +69,11 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     fps,
     frame,
     audioData,
-    numberOfSamples: 32,
+    numberOfSamples: 64,
     optimizeFor: 'accuracy',
   });
   const minDb = -60;
-  const maxDb = -10;
+  const maxDb = -0;
   const clampNumberBetween0and1 = (num: number) => Math.min(Math.max(num, 0), 1);
   const visualization = frequencyData.map((value) => {
     const db = 20 * Math.log10(value);
@@ -93,12 +105,12 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
               <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('ytThumb'))!.src : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
             </Animated>
             <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow: 'hidden' }}>
-              <Animated out={fps * 8} animations={[
+              <Animated out={fps * 11} animations={[
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: 1 }),
                 Move({ x: (ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 2 }),
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 7 }),
               ]}>
-                <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily:  fontFamilyJP, fontWeight: 'bold' }}>
+                <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold' }}>
                   {props.ytmMusicInfo}
                 </div>
               </Animated>
@@ -110,27 +122,34 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
         </div>
         <Animated animations={currentLyricsAnimation} style={{ zIndex: 999 }} >
           <div style={{
-            fontSize: 80, textAlign: 'center', fontFamily:  fontFamilyJP, fontWeight: 'bold', color: 'white',
+            fontSize: 80, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold', color: 'white',
             textShadow: '0 0 5px #00b7ff, 0 0 10px #00b7ff, 0 0 15px #00b7ff, 0 0 20px #00b7ff, 0 0 25px #00b7ff',
-            marginRight: 20, marginLeft: 20, zIndex: 999
+            marginRight: 40, marginLeft: 40, zIndex: 999
           }}>
             {currentLyrics}
-            <div style={{
-              fontSize: 45,
-              fontWeight: 'normal',
-              fontStyle: 'italic',
-              textShadow: '0 0 2px #ff7300, 0 0 5px #ff7300, 0 0 7px #ff7300, 0 0 10px #ff7300, 0 0 12px #ff7300',
-            }}>
-              {translateCurrentLyrics}
-            </div>
           </div>
         </Animated>
         <div style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
           {nextLyrics}
         </div>
-        <div style={{ height: 100, alignItems: 'flex-end', display: 'flex', flexDirection: 'row', gap: 5, position: 'absolute', bottom: 35 }}>
+
+        <Animated absolute animations={currentTranslateLyricsAnimation} style={{
+          fontSize: 45,
+          fontWeight: 'normal',
+          fontStyle: 'italic',
+          textShadow: '0 0 2px #ff7300, 0 0 5px #ff7300, 0 0 7px #ff7300, 0 0 10px #ff7300, 0 0 12px #ff7300',
+          color: 'white',
+          position: 'absolute',
+          bottom: 200,
+          zIndex: 999,
+          textAlign: 'center', fontFamily: fontFamilyJP,
+        }}>
+          {translateCurrentLyrics}
+        </Animated>
+
+        <div style={{ height: 100, alignItems: 'flex-end', display: 'flex', flexDirection: 'row', gap: 2, position: 'absolute', bottom: 35 }}>
           {visualization.map((a, i) => (
-            <div key={i} style={{ height: (70 * a) + 5, width: 5, background: 'linear-gradient(to top, #00b7ff, #00ffff)' }} />
+            <div key={i} style={{ height: (70 * a) + 5, width: 2, background: 'linear-gradient(to top, #00b7ff, #00ffff)' }} />
           ))}
         </div>
 
