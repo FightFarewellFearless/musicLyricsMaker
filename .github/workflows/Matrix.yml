@@ -35,9 +35,6 @@ jobs:
       - name: install dependencies
         run: npm i
 
-      - name: Set up WARP connection
-        run: sudo apt install cloudflare-warp && warp-cli registration new && warp-cli connect
-
       - name: run node
         shell: bash
         env:
