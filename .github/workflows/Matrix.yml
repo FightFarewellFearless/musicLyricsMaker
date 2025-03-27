@@ -36,9 +36,7 @@ jobs:
         run: npm i
 
       - name: Set up WARP connection
-        uses: sebst/actions-warp@main
-        with:
-          tos: YES   # Required. Set to YES to accept the Terms of Service of Cloudflare.
+        run: sudo apt install cloudflare-warp && warp-cli registration new && warp-cli connect
 
       - name: run node
         shell: bash
