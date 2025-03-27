@@ -36,7 +36,7 @@ jobs:
         run: npm i
 
       - name: Set up WARP connection
-        uses: sebst/actions-warp@v1
+        uses: sebst/actions-warp@main
         with:
           tos: YES   # Required. Set to YES to accept the Terms of Service of Cloudflare.
 
