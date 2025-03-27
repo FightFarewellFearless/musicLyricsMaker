@@ -35,6 +35,11 @@ jobs:
       - name: install dependencies
         run: npm i
 
+      - name: Set up WARP connection
+        uses: sebst/actions-warp@v1
+        with:
+          tos: YES   # Required. Set to YES to accept the Terms of Service of Cloudflare.
+
       - name: run node
         shell: bash
         env:
