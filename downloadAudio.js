@@ -17,7 +17,7 @@ Object.assign(globalThis, {
 });
 
 
-const yt = await Innertube.create({ retrieve_player: false });
+const yt = await Innertube.create({ retrieve_player: false, client_type: 'WEB_CREATOR' });
 const requestKey = "O43z0dpjhgX20SCx4KAo";
 const visitorData = yt.session.context.client.visitorData;
 
@@ -50,6 +50,7 @@ const innertube = await Innertube.create({
     cookie: process.env.YT_COOKIE,
     po_token: pot,
     visitor_data: visitorData,
+    client_type: 'WEB_CREATOR',
 });
 
 export async function downloadMusicFile(title) {

@@ -10,7 +10,7 @@ Object.assign(globalThis, {
 });
 
 
-const yt = await Innertube.create({ retrieve_player: false });
+const yt = await Innertube.create({ retrieve_player: false, client_type: 'WEB_CREATOR' });
 const requestKey = "O43z0dpjhgX20SCx4KAo";
 const visitorData = yt.session.context.client.visitorData;
 
@@ -20,10 +20,9 @@ const bgConfig = {
     identifier: visitorData,
     requestKey
 };
-BG.Challenge.create(bgConfig).then(async (bg) => {
+const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
     if (!bg) throw new Error("Could not get challenge");
     const interpreterJavascript = bg.interpreterJavascript.privateDoNotAccessOrElseSafeScriptWrappedValue;
-    console.log(interpreterJavascript);
     if (interpreterJavascript) {
         new Function(interpreterJavascript)();
     } else throw new Error("Could not get interpreterJavascript");
@@ -37,5 +36,7 @@ BG.Challenge.create(bgConfig).then(async (bg) => {
     if (!poTokenResult.poToken) {
         throw new Error("Could not get poToken");
     }
-    console.log(poTokenResult.poToken);
+    return (poTokenResult.poToken);
 });
+
+console.log(pot, visitorData)
