@@ -1,0 +1,75 @@
+name: Upload to youtube
+run-name: YTUP ${{ github.event.inputs.identifier }}
+on:
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: 'Scale'
+        type: string
+        default: "1"
+        required: true
+      identifier:
+        description: 'Identifier'
+        type: string
+        required: true
+      props:
+        description: Video Props
+        required: true
+        default: |
+          {
+            "musicTitle": "",
+            "translateTo": "none",
+            "syncronizeLyrics": [],
+            "translateSyncronizeLyrics": [],
+            "background": "default",
+            "ytmMusicInfo": "",
+            "ytmThumbnail": "",
+            "searchLyricsIndex": 0
+          }
+jobs:
+  mempersiapkan-data-yang-diperlukan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      
+      - name: install dependencies
+        run: npm i
+
+      - name: run node
+        shell: bash
+        env:
+          YT_COOKIE: ${{ secrets.ytcookie }}
+          PROPS: ${{ github.event.inputs.props }}
+        run: echo $PROPS > props.json && node downloadAudio
+      - uses: actions/upload-artifact@main
+        with:
+          name: audioDownload
+          path: |
+            ./public
+  call-workflow-in-another-repo:
+    needs: [mempersiapkan-data-yang-diperlukan]
+    uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
+    with:
+      num_of_workers: 10
+      remotion_composition_id: MusicLyrics
+      remotion_entry_point: src/index.ts
+      props: ${{ github.event.inputs.props }}
+      scale: ${{ github.event.inputs.scale }}
+      id: ${{ github.event.inputs.identifier }}
+
+  uploading-to-youtube:
+    needs: [call-workflow-in-another-repo]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: video
+          path: video
+      - name: Installing deps
+        run: npm i
+      - name: Uploading...
+        env:
+          YT_COOKIE: ${{ secrets.ytcookie }}
+          VIDEO_PATH: video
+          PROPS: ${{ github.event.inputs.props }}
+        run: echo $PROPS > props.json && node upload.js
