@@ -69,7 +69,7 @@ jobs:
         run: npm i
       - name: Uploading...
         env:
-          YT_COOKIE: ${{ secrets.ytcookie }}
+          YTAPI: ${{ secrets.YTAPI }}
           VIDEO_PATH: video
           PROPS: ${{ github.event.inputs.props }}
         run: echo $PROPS > props.json && node upload.js
