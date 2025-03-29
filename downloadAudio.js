@@ -1,13 +1,11 @@
-import { Innertube, UniversalCache } from 'youtubei.js';
+import { BG } from 'bgutils-js';
 import fs from 'fs';
-import { Readable } from 'stream';
-import { finished } from 'stream/promises';
 import trr from 'googletrans';
-const tr = trr.default;
+import { JSDOM } from 'jsdom';
+import { Innertube, UniversalCache } from 'youtubei.js';
 import props from './props.json' with { type: "json" };
 import { romanize, translateLyric } from './src/googletranslate.js';
-import { BG } from 'bgutils-js';
-import { JSDOM } from 'jsdom';
+const tr = trr.default;
 
 const dom = new JSDOM();
 
@@ -58,10 +56,11 @@ export async function downloadMusicFile(title) {
     const video = await innertube.music.search(title, {
         type: 'song'
     });
-    const download = await innertube.download(video.songs.contents[0].id, {
-        type: 'audio'
-    });
+    const musicurl = (await innertube.music.getInfo(video.songs.contents[0].id)).streaming_data.adaptive_formats.find(a => a.mime_type.startsWith('audio')).decipher(innertube.session.player);
     console.log('Downloading', video.songs.contents[0].title, '-', video.songs.contents[0].artists.map(a => a.name).join(', '));
+    const download = await fetch(musicurl).then(a => a.arrayBuffer()).then(a => Buffer.from(a));
+    fs.writeFileSync('./public/music.mp3', download);
+
     const ytmSearchResult = (video.songs.contents.map(song => ({
         id: song.id,
         title: song.title,
@@ -130,9 +129,6 @@ export async function downloadMusicFile(title) {
     }
 
     fs.writeFileSync('./public/syncronizeLyrics.json', JSON.stringify(syncronizeLyrics));
-
-    const file = fs.createWriteStream('./public/music.mp3');
-    await finished(Readable.fromWeb(download).pipe(file));
 };
 
 downloadMusicFile(
