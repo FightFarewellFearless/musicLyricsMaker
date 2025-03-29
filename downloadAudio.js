@@ -62,7 +62,7 @@ export async function downloadMusicFile(title) {
     const download = await fetch(musicurl).then(a => a.arrayBuffer()).then(a => Buffer.from(a));
     fs.writeFileSync('./public/music.mp4', download);
 
-    execSync('ffmpeg -i ./public/music.mp4 ./public/music.mp3');
+    execSync('ffmpeg -y -i ./public/music.mp4 ./public/music.mp3');
 
     fs.unlinkSync('./public/music.mp4');
 
