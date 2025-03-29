@@ -1,4 +1,4 @@
-import { Innertube } from 'youtubei.js';
+import { Innertube, UniversalCache } from 'youtubei.js';
 import fs from 'fs';
 import { Readable } from 'stream';
 import { finished } from 'stream/promises';
@@ -47,6 +47,7 @@ const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
 });
 
 const innertube = await Innertube.create({
+    cache: new UniversalCache(true),
     cookie: process.env.YT_COOKIE,
     po_token: pot,
     visitor_data: visitorData,
