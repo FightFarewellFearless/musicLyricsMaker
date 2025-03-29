@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
-      
+      - uses: FedericoCarboni/setup-ffmpeg@v2
       - name: install dependencies
         run: npm i
 
