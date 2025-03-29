@@ -8,6 +8,7 @@ import { romanize, translateLyric } from './src/googletranslate.js';
 import { execSync } from 'child_process';
 const tr = trr.default;
 
+console.log("Initializing JSDOM...");
 const dom = new JSDOM();
 
 Object.assign(globalThis, {
@@ -15,24 +16,31 @@ Object.assign(globalThis, {
     document: dom.window.document
 });
 
-
+console.log("Creating Innertube instance...");
 const yt = await Innertube.create({ retrieve_player: false, client_type: 'WEB_CREATOR' });
 const requestKey = "O43z0dpjhgX20SCx4KAo";
 const visitorData = yt.session.context.client.visitorData;
 
+console.log("Setting up BG configuration...");
 const bgConfig = {
     fetch: (...params) => fetch(...params),
     globalObj: globalThis,
     identifier: visitorData,
     requestKey
 };
+
+console.log("Creating BG Challenge...");
 const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
     if (!bg) throw new Error("Could not get challenge");
+    console.log("BG Challenge created successfully.");
+
     const interpreterJavascript = bg.interpreterJavascript.privateDoNotAccessOrElseSafeScriptWrappedValue;
     if (interpreterJavascript) {
+        console.log("Executing interpreterJavascript...");
         new Function(interpreterJavascript)();
     } else throw new Error("Could not get interpreterJavascript");
 
+    console.log("Generating PoToken...");
     const poTokenResult = await BG.PoToken.generate({
         program: bg.program,
         globalName: bg.globalName,
@@ -42,9 +50,11 @@ const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
     if (!poTokenResult.poToken) {
         throw new Error("Could not get poToken");
     }
+    console.log("PoToken generated successfully.");
     return (poTokenResult.poToken);
 });
 
+console.log("Creating Innertube instance with PoToken...");
 const innertube = await Innertube.create({
     cache: new UniversalCache(true),
     cookie: process.env.YT_COOKIE,
@@ -54,18 +64,24 @@ const innertube = await Innertube.create({
 });
 
 export async function downloadMusicFile(title) {
+    console.log("Searching for music:", title);
     const video = await innertube.music.search(title, {
         type: 'song'
     });
+
     const musicurl = (await innertube.music.getInfo(video.songs.contents[0].id)).streaming_data.formats[0].decipher(innertube.session.player);
-    console.log('Downloading', video.songs.contents[0].title, '-', video.songs.contents[0].artists.map(a => a.name).join(', '));
+
+    console.log("Downloading music file...");
     const download = await fetch(musicurl).then(a => a.arrayBuffer()).then(a => Buffer.from(a));
     fs.writeFileSync('./public/music.mp4', download);
 
+    console.log("Converting music file to MP3...");
     execSync('ffmpeg -y -i ./public/music.mp4 ./public/music.mp3');
 
+    console.log("Deleting temporary MP4 file...");
     fs.unlinkSync('./public/music.mp4');
 
+    console.log("Processing search results...");
     const ytmSearchResult = (video.songs.contents.map(song => ({
         id: song.id,
         title: song.title,
@@ -73,25 +89,28 @@ export async function downloadMusicFile(title) {
         thumbnail: song.thumbnails[0].url,
         duration: song.duration?.seconds
     })));
+    console.log("Search results:", ytmSearchResult);
     fs.writeFileSync('./public/search.json', JSON.stringify(ytmSearchResult));
-    // fetch music thumbnail
+
+    console.log("Fetching music thumbnail...");
     fetch(video.songs.contents[0].thumbnails[0].url).then(async a => ({
         buffer: Buffer.from(await a.arrayBuffer()),
         fileExtension: a.headers.get('content-type').split('/')[1].split(';')[0]
     })).then(a => fs.writeFileSync('./public/ytThumb.' + a.fileExtension, a.buffer));
 
     if (props.background === 'default' && typeof props.background === 'string') {
+        console.log("Fetching default background...");
         props.background = await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
             .then(res => res.json()).then(a => a.filter((a) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url);
     }
-    // fetch background
+
+    console.log("Fetching background...");
     fetch(props.background?.video ?? props.background).then(async a => ({
         buffer: Buffer.from(await a.arrayBuffer()),
         fileExtension: a.headers.get('content-type').split('/')[1].split(';')[0]
     })).then(a => fs.writeFileSync('./public/background.' + a.fileExtension, a.buffer));
 
-    // sync lyrics
-
+    console.log("Synchronizing lyrics...");
     let syncronizeLyrics = [];
 
     const data = await fetch(
@@ -100,11 +119,13 @@ export async function downloadMusicFile(title) {
         .filter(a => Math.abs(a.duration - ytmSearchResult[0].duration) <= 2)
         // @ts-ignore
         .toSorted((a, b) => a.duration - b.duration));
+    console.log("Lyrics search result:", data);
 
-    const searchData = data[props.searchLyricsIndex]; // props.searchLyricsIndex
+    const searchData = data[props.searchLyricsIndex];
+    console.log("Selected lyrics data:", searchData);
     fs.writeFileSync('./public/searchData.json', JSON.stringify(searchData));
 
-    const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
+    const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n");
     syncronizeLyricsRaw.forEach(a => {
         try {
             const start = a.split("[")[1].split("]")[0];
@@ -117,25 +138,34 @@ export async function downloadMusicFile(title) {
         } catch { };
     });
 
+    console.log("Translating lyrics...");
     const translate = await tr(searchData.syncedLyrics);
+    console.log("Translation result:", translate);
+
     // @ts-ignore
     const shouldRomanize = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3];
+    console.log("Should romanize:", shouldRomanize);
 
-    if(props.translateTo !== 'none') {
+    if (props.translateTo !== 'none') {
+        console.log("Translating synchronized lyrics...");
         fs.writeFileSync('./public/translateSyncronizeLyrics.json', JSON.stringify(
             await translateLyric(syncronizeLyrics, props.translateTo)
-        ))
+        ));
     } else {
+        console.log("No translation needed.");
         fs.writeFileSync('./public/translateSyncronizeLyrics.json', '[]');
     };
 
     if (shouldRomanize) {
+        console.log("Romanizing lyrics...");
         syncronizeLyrics = await romanize(syncronizeLyrics);
     }
 
+    console.log("Writing synchronized lyrics to file...");
     fs.writeFileSync('./public/syncronizeLyrics.json', JSON.stringify(syncronizeLyrics));
 };
 
+console.log("Starting downloadMusicFile...");
 downloadMusicFile(
     props.musicTitle
 );
