@@ -18,7 +18,7 @@
     "react-dom": "19.0.0",
     "remotion": "4.0.278",
     "remotion-animated": "^2.2.0",
-    "youtubei.js": "^13.1.0",
+    "youtubei.js": "^13.3.0",
     "zod": "3.22.3"
   },
   "devDependencies": {
