@@ -64,6 +64,8 @@ export async function downloadMusicFile(title) {
 
     execSync('ffmpeg -i ./public/music.mp4 ./public/music.mp3');
 
+    fs.unlinkSync('./public/music.mp4');
+
     const ytmSearchResult = (video.songs.contents.map(song => ({
         id: song.id,
         title: song.title,
