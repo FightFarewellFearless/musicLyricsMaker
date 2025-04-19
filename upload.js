@@ -1,8 +1,9 @@
-const fs = require('fs');
-const google = require('googleapis').google;
-const props = require('./props.json');
+import { createReadStream } from 'fs';
+import { google } from 'googleapis';
+import { musicTitle } from './props.json' with { type: "json" };
+import dotenv from 'dotenv';
+dotenv.config();
 const { OAuth2 } = google.auth;
-require('dotenv').config();
 const oauth2client = new OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI);
 oauth2client.setCredentials({
     refresh_token: process.env.REFRESH_TOKEN
@@ -36,7 +37,7 @@ async function uploadVideo(title, description, video) {
     const thumbnailRes = await youtube.thumbnails.set({
         videoId: videoId,
         media: {
-            body: fs.createReadStream('./video/workflow_output/thumbnail.png'), // Path to your thumbnail image
+            body: createReadStream('./video/workflow_output/thumbnail.png'), // Path to your thumbnail image
         },
     });
 
@@ -44,7 +45,7 @@ async function uploadVideo(title, description, video) {
     console.log(res.data);
 }
 
-const description = `Check out "${props.musicTitle}"! 
+const description = `Check out "${musicTitle}"! 
 Hope you enjoy it as much as we loved making it.`;
 
-uploadVideo(props.musicTitle + ' (Lyrics)', description, fs.createReadStream('./video/video.mp4'));
+uploadVideo(musicTitle + ' (Lyrics)', description, createReadStream('./video/video.mp4'));
