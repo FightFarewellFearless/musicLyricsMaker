@@ -61,6 +61,7 @@ jobs:
     needs: [call-workflow-in-another-repo]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@main
       - uses: actions/download-artifact@v4
         with:
           name: video
