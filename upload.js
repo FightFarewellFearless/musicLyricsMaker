@@ -1,6 +1,6 @@
 import { createReadStream } from 'fs';
 import { google } from 'googleapis';
-import { musicTitle } from './props.json' with { type: "json" };
+import props from './props.json' with { type: "json" };
 import dotenv from 'dotenv';
 dotenv.config();
 const { OAuth2 } = google.auth;
@@ -45,7 +45,7 @@ async function uploadVideo(title, description, video) {
     console.log(res.data);
 }
 
-const description = `Check out "${musicTitle}"! 
+const description = `Check out "${props.musicTitle}"! 
 Hope you enjoy it as much as we loved making it.`;
 
-uploadVideo(musicTitle + ' (Lyrics)', description, createReadStream('./video/video.mp4'));
+uploadVideo(props.musicTitle + ' (Lyrics)', description, createReadStream('./video/video.mp4'));
