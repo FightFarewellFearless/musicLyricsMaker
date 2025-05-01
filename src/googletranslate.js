@@ -26,7 +26,7 @@ export async function romanize(lyricsSource) {
     try {
       const romanize = await tr(syncronizeLyrics[i].text);
       // @ts-ignore
-      syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3]
+      syncronizeLyrics[i].text = romanize.raw[0]?.[romanize.raw[0].length - 1]?.[3] ?? syncronizeLyrics[i].text;
     } catch { }
   }
   return syncronizeLyrics;
@@ -45,7 +45,7 @@ export async function translateLyric(lyricsSource, to) {
     try {
       const translate = await tr(syncronizeLyrics[i].text, to);
       // @ts-ignore
-      syncronizeLyrics[i].text = translate.text;
+      syncronizeLyrics[i].text = translate.text ?? syncronizeLyrics[i].text;
     } catch { }
   }
   return syncronizeLyrics;
