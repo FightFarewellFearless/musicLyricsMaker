@@ -21,7 +21,7 @@
     "remotion": "4.0.278",
     "remotion-animated": "^2.2.0",
     "youtube-api": "^3.0.2",
-    "youtubei.js": "^13.4.0",
+    "youtubei.js": "^14.0.0",
     "zod": "3.22.3"
   },
   "devDependencies": {
