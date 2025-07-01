@@ -12,7 +12,7 @@
     "@remotion/zod-types": "4.0.278",
     "bgutils-js": "^3.2.0",
     "cross-fetch": "^4.1.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.0.1",
     "googleapis": "^148.0.0",
     "googletrans": "^1.0.21",
     "jsdom": "^26.0.0",
