@@ -72,8 +72,8 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
     numberOfSamples: 64,
     optimizeFor: 'accuracy',
   });
-  const minDb = -80;
-  const maxDb = -10;
+  const minDb = -60;
+  const maxDb = -5;
   const clampNumberBetween0and1 = (num: number) => Math.min(Math.max(num, 0), 1);
   const visualization = frequencyData.map((value) => {
     const db = 20 * Math.log10(value);
