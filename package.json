@@ -17,7 +17,7 @@
     "googletrans": "^1.0.21",
     "jsdom": "^26.0.0",
     "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react-dom": "19.1.1",
     "remotion": "4.0.278",
     "remotion-animated": "^2.2.0",
     "youtube-api": "^3.0.2",
