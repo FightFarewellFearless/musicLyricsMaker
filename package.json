@@ -7,7 +7,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@remotion/cli": "4.0.278",
+    "@remotion/cli": "4.0.340",
     "@remotion/google-fonts": "4.0.278",
     "@remotion/zod-types": "4.0.278",
     "bgutils-js": "^3.2.0",
