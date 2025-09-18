@@ -8,7 +8,7 @@
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.278",
-    "@remotion/google-fonts": "4.0.278",
+    "@remotion/google-fonts": "4.0.350",
     "@remotion/zod-types": "4.0.278",
     "bgutils-js": "^3.2.0",
     "cross-fetch": "^4.1.0",
