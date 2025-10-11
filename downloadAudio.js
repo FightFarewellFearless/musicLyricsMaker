@@ -132,8 +132,10 @@ export async function downloadMusicFile(title) {
             const start = a.split("[")[1].split("]")[0];
             const text = a.split("]")[1];
             const [minutes, seconds] = start.split(":");
+            const start = (Number(minutes) * 60) + Number(seconds);
+            if (start === 0 && text.trim() === "") return;
             syncronizeLyrics.push({
-                start: (Number(minutes) * 60) + Number(seconds),
+                start,
                 text,
             });
         } catch { };
