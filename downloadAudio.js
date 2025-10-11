@@ -115,7 +115,7 @@ export async function downloadMusicFile(title) {
     let syncronizeLyrics = [];
 
     const data = await fetch(
-        "https://lrclib.net/api/search?q=" + encodeURIComponent("Alamak Rizky")
+        "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult[0].title + " " + ytmSearchResult[0].artists.join(" "))
     ).then((res) => res.json()).then((x) => x.filter(a => a.syncedLyrics !== null)
         .filter(a => Math.abs(a.duration - ytmSearchResult[0].duration) <= 2)
         // @ts-ignore
