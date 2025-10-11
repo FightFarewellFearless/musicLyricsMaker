@@ -133,7 +133,7 @@ export async function downloadMusicFile(title) {
             const text = a.split("]")[1];
             const [minutes, seconds] = start.split(":");
             const startDuration = (Number(minutes) * 60) + Number(seconds);
-            if (start === 0 && text.trim() === "") return;
+            if (startDuration === 0 && text.trim() === "") return;
             syncronizeLyrics.push({
                 start: startDuration,
                 text,
