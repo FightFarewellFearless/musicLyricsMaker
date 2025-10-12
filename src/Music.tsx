@@ -84,15 +84,22 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
   return (
     <>
       <Audio src={music} />
-      <AbsoluteFill style={{ backgroundColor: 'white', justifyContent: 'center', alignItems: 'center' }}>
-        <AbsoluteFill>
+      <AbsoluteFill style={{ backgroundColor: '#111', justifyContent: 'center', alignItems: 'center' }}>
+        {/* Background Media */}
+        <AbsoluteFill style={{ opacity: 0.5 }}>
           {typeof props.background === 'string' ? (
             <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           ) : (
             <LoopableOffthreadVideo muted loop src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('background'))!.src : props.background.video} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
           )}
-          <div style={{ backgroundColor: 'black', opacity: 0.6, position: 'absolute', width: '100%', height: '100%' }} />
         </AbsoluteFill>
+
+        {/* Modern Overlay: Glassmorphism + Vignette */}
+        <AbsoluteFill style={{
+          backdropFilter: 'blur(3px)',
+          background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%)'
+        }} />
+
         <div style={{ zIndex: 999, position: 'absolute', top: 50, left: 50, }}>
           <Animated animations={[
             Move({ y: 0, initialY: -250, duration: fps * 3 }),
@@ -102,34 +109,47 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             <Animated absolute out={fps * 12} animations={[
               Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
             ]}>
-              <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('ytThumb'))!.src : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 150, height: 150, borderRadius: 100, border: '5px solid white' }} />
+              <Img src={process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? getStaticFiles().find(a => a.name.startsWith('ytThumb'))!.src : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(props.ytmThumbnail)}`} style={{ width: 140, height: 140, borderRadius: 100, border: '5px solid white' }} />
             </Animated>
-            <div style={{ left: 180, top: 150 / 2, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ left: 180, top: 140 / 2, position: 'relative', overflow: 'hidden' }}>
               <Animated out={fps * 11} animations={[
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: 1 }),
                 Move({ x: (ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 2 }),
                 Move({ x: -(ytmMusicInfoWidth + 100), duration: fps * 3, start: fps * 7 }),
               ]}>
-                <div ref={ytmMusicInfoRef} style={{ color: 'white', fontSize: 40, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold' }}>
+                <div ref={ytmMusicInfoRef} style={{ color: '#ffffffc7', fontSize: 30, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold' }}>
                   {props.ytmMusicInfo}
                 </div>
               </Animated>
             </div>
           </Animated>
+          <Animated in={fps * 15} animations={[
+            Move({ y: 0, initialY: -100, start: fps * 15, duration: fps * 3 }),
+          ]}>
+            <div style={{ color: '#ffffffc7', fontSize: 30, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold' }}>
+              {props.ytmMusicInfo}
+            </div>
+          </Animated>
         </div>
-        <div style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
+        <div style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
           {previousLyrics}
         </div>
         <Animated animations={currentLyricsAnimation} style={{ zIndex: 999 }} >
           <div style={{
-            fontSize: 80, textAlign: 'center', fontFamily: fontFamilyJP, fontWeight: 'bold', color: 'white',
-            textShadow: '0 0 5px #00b7ff, 0 0 10px #00b7ff, 0 0 15px #00b7ff, 0 0 20px #00b7ff, 0 0 25px #00b7ff',
-            marginRight: 40, marginLeft: 40, zIndex: 999
+            fontSize: 70,
+            textAlign: 'center',
+            fontFamily: fontFamilyJP,
+            fontWeight: 'bold',
+            color: 'white',
+            filter: 'drop-shadow(0 0 5px #00b7ff) drop-shadow(0 0 15px #00b7ff)',
+            marginRight: 40,
+            marginLeft: 40,
+            zIndex: 999
           }}>
             {currentLyrics}
           </div>
         </Animated>
-        <div style={{ fontSize: 45, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
+        <div style={{ fontSize: 35, fontWeight: 'bold', textAlign: 'center', opacity: 0.7, color: 'white', fontFamily: fontFamilyJP }}>
           {nextLyrics}
         </div>
 
@@ -153,12 +173,44 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
           ))}
         </div>
 
-        <div style={{ height: 5, width: 1000, position: 'absolute', bottom: 20 }}>
-          <div style={{ fontSize: 40, position: 'absolute', left: 0, bottom: 7, color: 'white', fontWeight: 'bold' }}>{currentTimeDuration}</div>
-          <div style={{ backgroundColor: 'white', height: 5, width: 1000, position: 'absolute', bottom: 0 }} />
-          <div style={{ height: 5, width: (frame / durationInFrames) * 1000, backgroundColor: 'red', position: 'absolute' }} />
-          <div style={{ position: 'absolute', left: (frame / durationInFrames) * 1000, bottom: -10, height: 25, width: 25, borderRadius: 100, backgroundColor: 'red' }} />
-          <div style={{ fontSize: 40, position: 'absolute', right: 0, bottom: 7, color: 'white', fontWeight: 'bold' }}>{totalDuration}</div>
+        <div style={{
+          position: 'absolute',
+          bottom: 12,
+          width: '70%',
+          maxWidth: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 15,
+        }}>
+          <div style={{ fontSize: 30, fontWeight: 'bold', opacity: 0.8, color: 'white' }}>{currentTimeDuration}</div>
+          <div style={{
+            flex: 1,
+            height: 8,
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: 4,
+            position: 'relative',
+            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${(frame / durationInFrames) * 100}%`,
+              backgroundColor: '#00b7ff',
+              borderRadius: 4,
+              position: 'absolute'
+            }} />
+            <div style={{
+              position: 'absolute',
+              left: `${(frame / durationInFrames) * 100}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              height: 20,
+              width: 20,
+              borderRadius: '50%',
+              backgroundColor: 'white',
+              boxShadow: '0 0 10px #00b7ff',
+            }} />
+          </div>
+          <div style={{ fontSize: 30, fontWeight: 'bold', opacity: 0.8, color: 'white' }}>{totalDuration}</div>
         </div>
       </AbsoluteFill>
     </>
