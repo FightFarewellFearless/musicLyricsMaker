@@ -1,6 +1,7 @@
 import { CalculateMetadataFunction, Composition, getStaticFiles, staticFile, Still } from "remotion";
 import tr from 'googletrans';
 import Music from "./Music";
+import MusicPortrait from "./MusicPortrait";
 import fetch from "cross-fetch";
 import { z } from "zod";
 import ThumbnailCreator from "./ThumbnailCreator";
@@ -77,6 +78,16 @@ export const RemotionRoot: React.FC = () => {
         fps={30}
         width={1920}
         height={1080}
+        defaultProps={defaultProps}
+        schema={DefaultSchema}
+      />
+      <Composition
+        id="MusicLyricsPortrait"
+        component={MusicPortrait}
+        calculateMetadata={calculateMetadata}
+        fps={30}
+        width={1080}
+        height={1920}
         defaultProps={defaultProps}
         schema={DefaultSchema}
       />

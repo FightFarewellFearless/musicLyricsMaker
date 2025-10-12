@@ -3,6 +3,14 @@ run-name: YTUP ${{ github.event.inputs.identifier }}
 on:
   workflow_dispatch:
     inputs:
+      type:
+        description: 'Type of video'
+        type: choice
+        options:
+          - portrait
+          - landscape
+        default: "landscape"
+        required: true
       scale:
         description: 'Scale'
         type: string
@@ -51,7 +59,7 @@ jobs:
     uses: FightFarewellFearless/Remotion-Matrix-Renderer/.github/workflows/render-video-matrix.yml@master
     with:
       num_of_workers: 10
-      remotion_composition_id: MusicLyrics
+      remotion_composition_id: ${{ github.event.inputs.type == 'portrait' && 'MusicLyricsPortrait' || 'MusicLyrics' }}
       remotion_entry_point: src/index.ts
       props: ${{ github.event.inputs.props }}
       scale: ${{ github.event.inputs.scale }}
