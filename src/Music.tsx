@@ -1,6 +1,6 @@
 import {
   AbsoluteFill,
-  Html5Audio,
+  Audio,
   getStaticFiles,
   Img,
   staticFile,
@@ -115,7 +115,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
   });
   return (
     <>
-      <Html5Audio src={music} />
+      <Audio src={music} />
       <AbsoluteFill
         style={{
           backgroundColor: "#111",
