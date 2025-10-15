@@ -13,7 +13,7 @@
     "@remotion/google-fonts": "4.0.358",
     "@remotion/licensing": "^4.0.358",
     "@remotion/media-parser": "^4.0.358",
-    "@remotion/media-utils": "^4.0.358",
+    "@remotion/media-utils": "^4.0.362",
     "@remotion/player": "^4.0.358",
     "@remotion/renderer": "^4.0.358",
     "@remotion/streaming": "^4.0.358",
