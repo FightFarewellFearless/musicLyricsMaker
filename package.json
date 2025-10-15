@@ -7,7 +7,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@remotion/bundler": "^4.0.358",
+    "@remotion/bundler": "^4.0.362",
     "@remotion/cli": "4.0.358",
     "@remotion/compositor-linux-x64-gnu": "^4.0.358",
     "@remotion/google-fonts": "4.0.358",
