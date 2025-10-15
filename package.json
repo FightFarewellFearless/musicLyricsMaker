@@ -31,7 +31,7 @@
     "jsdom": "^26.0.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "remotion": "4.0.358",
+    "remotion": "4.0.362",
     "remotion-animated": "^2.2.0",
     "youtube-api": "^3.0.2",
     "youtubei.js": "^15.1.1",
