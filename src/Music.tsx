@@ -3,6 +3,7 @@ import {
   Audio,
   getStaticFiles,
   Img,
+  interpolate,
   staticFile,
   useCurrentFrame,
   useCurrentScale,
@@ -96,22 +97,46 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
   const totalDuration = `${String(Math.floor(durationInFrames / fps / 60)).padStart(2, "0")}:${String(Math.floor((durationInFrames / fps) % 60)).padStart(2, "0")}`;
 
   if (!audioData) return null;
+  const frequencyDataNext = visualizeAudio({
+    fps,
+    frame: frame + 1,
+    audioData,
+    numberOfSamples: 64,
+    optimizeFor: "accuracy",
+    smoothing: true,
+  });
+  const frequencyDataNextTwo = visualizeAudio({
+    fps,
+    frame: frame + 2,
+    audioData,
+    numberOfSamples: 64,
+    optimizeFor: "accuracy",
+    smoothing: true,
+  });
   const frequencyData = visualizeAudio({
     fps,
     frame,
     audioData,
     numberOfSamples: 64,
     optimizeFor: "accuracy",
+    smoothing: true,
   });
-  const minDb = -60;
+  const minDb = -50;
   const maxDb = -5;
   const clampNumberBetween0and1 = (num: number) =>
     Math.min(Math.max(num, 0), 1);
-  const visualization = frequencyData.map((value) => {
-    const db = 20 * Math.log10(value);
-    const scaled = (db - minDb) / (maxDb - minDb);
+  const visualization = frequencyData.map((value, index) => {
+    function dbToHeight(val: number) {
+      const db = 20 * Math.log10(val);
+      const scaled = (db - minDb) / (maxDb - minDb);
 
-    return clampNumberBetween0and1(scaled);
+      return Math.pow(clampNumberBetween0and1(scaled), 0.85);
+    }
+    const height = dbToHeight(value);
+    const heightNext = dbToHeight(frequencyDataNext[index]);
+    const heightNextTwo = dbToHeight(frequencyDataNextTwo[index]);
+    const smoothHeight = (height + heightNext + heightNextTwo) / 3;
+    return smoothHeight;
   });
   return (
     <>
@@ -329,16 +354,31 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             bottom: 35,
           }}
         >
-          {visualization.map((a, i) => (
-            <div
-              key={i}
-              style={{
-                height: 70 * a + 5,
-                width: 2,
-                background: "linear-gradient(to top, #00b7ff, #00ffff)",
-              }}
-            />
-          ))}
+          {visualization.map((a, i) => {
+            const height = interpolate(a, [0, 1], [5, 75], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+
+            const hue = interpolate(a, [0, 1], [180, 220], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+            const color = `hsl(${hue}, 80%, 60%)`;
+
+            return (
+              <div
+                key={i}
+                style={{
+                  height: `${height}px`,
+                  width: 2,
+                  background: `linear-gradient(to top, ${color}, rgba(255, 255, 255, 0.8))`,
+                  borderRadius: "4px",
+                  boxShadow: `0 0 8px rgba(${hue}, 150, 255, 0.6)`,
+                }}
+              />
+            );
+          })}
         </div>
 
         <div

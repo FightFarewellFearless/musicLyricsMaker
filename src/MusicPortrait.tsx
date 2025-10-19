@@ -3,6 +3,7 @@ import {
   Audio,
   getStaticFiles,
   Img,
+  interpolate,
   staticFile,
   useCurrentFrame,
   useCurrentScale,
@@ -29,14 +30,14 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
     process.env.REMOTION_USE_LOCAL_DIR === "yes"
       ? staticFile("music.mp3")
       : `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(
-          props.musicTitle
+          props.musicTitle,
         )}`;
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const duration = frame / fps;
 
   const lyricsOnCurrentDuration = props.syncronizeLyrics.filter(
-    (a) => duration >= a.start
+    (a) => duration >= a.start,
   );
   let currentLyrics = lyricsOnCurrentDuration.slice(-1)[0]?.text || "♫";
   currentLyrics =
@@ -45,7 +46,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
   const nextLyrics =
     props.syncronizeLyrics[
       lyricsOnCurrentDuration.lastIndexOf(
-        lyricsOnCurrentDuration[lyricsOnCurrentDuration.length - 1]
+        lyricsOnCurrentDuration[lyricsOnCurrentDuration.length - 1],
       ) + 1
     ]?.text || "";
 
@@ -62,7 +63,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
   useLayoutEffect(() => {
     if (!ytmMusicInfoRef.current) return;
     setYtmMusicInfoWidth(
-      ytmMusicInfoRef.current.getBoundingClientRect().width / scale
+      ytmMusicInfoRef.current.getBoundingClientRect().width / scale,
     );
   }, [scale, audioData]);
 
@@ -73,7 +74,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
       const duration = fps / 2;
       animation.push(
         Move({ y: 0, initialY: 60, start, duration }),
-        Scale({ by: 1, initial: 0.85, start, duration, initialZ: 1 })
+        Scale({ by: 1, initial: 0.85, start, duration, initialZ: 1 }),
       );
     });
     return animation;
@@ -91,31 +92,55 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
 
   const currentTimeDuration = `${String(Math.floor(duration / 60)).padStart(
     2,
-    "0"
+    "0",
   )}:${String(Math.floor(duration % 60)).padStart(2, "0")}`;
   const totalDuration = `${String(
-    Math.floor(durationInFrames / fps / 60)
+    Math.floor(durationInFrames / fps / 60),
   ).padStart(2, "0")}:${String(
-    Math.floor((durationInFrames / fps) % 60)
+    Math.floor((durationInFrames / fps) % 60),
   ).padStart(2, "0")}`;
 
   if (!audioData) return null;
+  const frequencyDataNext = visualizeAudio({
+    fps,
+    frame: frame + 1,
+    audioData,
+    numberOfSamples: 64,
+    optimizeFor: "accuracy",
+    smoothing: true,
+  });
+  const frequencyDataNextTwo = visualizeAudio({
+    fps,
+    frame: frame + 2,
+    audioData,
+    numberOfSamples: 64,
+    optimizeFor: "accuracy",
+    smoothing: true,
+  });
   const frequencyData = visualizeAudio({
     fps,
     frame,
     audioData,
     numberOfSamples: 64,
     optimizeFor: "accuracy",
+    smoothing: true,
   });
-
-  const minDb = -60;
+  const minDb = -50;
   const maxDb = -5;
   const clampNumberBetween0and1 = (num: number) =>
     Math.min(Math.max(num, 0), 1);
-  const visualization = frequencyData.map((value) => {
-    const db = 20 * Math.log10(value);
-    const scaled = (db - minDb) / (maxDb - minDb);
-    return clampNumberBetween0and1(scaled);
+  const visualization = frequencyData.map((value, index) => {
+    function dbToHeight(val: number) {
+      const db = 20 * Math.log10(val);
+      const scaled = (db - minDb) / (maxDb - minDb);
+
+      return Math.pow(clampNumberBetween0and1(scaled), 0.85);
+    }
+    const height = dbToHeight(value);
+    const heightNext = dbToHeight(frequencyDataNext[index]);
+    const heightNextTwo = dbToHeight(frequencyDataNextTwo[index]);
+    const smoothHeight = (height + heightNext + heightNextTwo) / 3;
+    return smoothHeight;
   });
 
   return (
@@ -137,7 +162,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
               src={
                 process.env.REMOTION_USE_LOCAL_DIR === "yes"
                   ? getStaticFiles().find((a) =>
-                      a.name.startsWith("background")
+                      a.name.startsWith("background"),
                     )!.src
                   : props.background
               }
@@ -154,7 +179,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
               src={
                 process.env.REMOTION_USE_LOCAL_DIR === "yes"
                   ? getStaticFiles().find((a) =>
-                      a.name.startsWith("background")
+                      a.name.startsWith("background"),
                     )!.src
                   : props.background.video
               }
@@ -200,7 +225,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
                   ? getStaticFiles().find((a) => a.name.startsWith("ytThumb"))!
                       .src
                   : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(
-                      props.ytmThumbnail
+                      props.ytmThumbnail,
                     )}`
               }
               style={{
@@ -286,8 +311,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             textAlign: "center",
             fontSize: 45,
             fontStyle: "italic",
-            textShadow:
-              "0 0 3px #ff7300, 0 0 6px #ff7300, 0 0 10px #ff7300",
+            textShadow: "0 0 3px #ff7300, 0 0 6px #ff7300, 0 0 10px #ff7300",
             color: "white",
             fontFamily: fontFamilyJP,
           }}
@@ -308,16 +332,33 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             height: 100,
           }}
         >
-          {visualization.map((a, i) => (
-            <div
-              key={i}
-              style={{
-                height: 80 * a + 5,
-                width: 3,
-                background: "linear-gradient(to top, #00b7ff, #00ffff)",
-              }}
-            />
-          ))}
+          {visualization.map((a, i) => {
+            const height = interpolate(a, [0, 1], [5, 85], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+
+            const hue = interpolate(a, [0, 1], [180, 220], {
+              extrapolateLeft: "clamp",
+              extrapolateRight: "clamp",
+            });
+            const color = `hsl(${hue}, 80%, 60%)`;
+
+            return (
+              <div
+                key={i}
+                style={{
+                  height: `${height}px`,
+                  width: 3,
+                  background: `linear-gradient(to top, ${color}, rgba(255, 255, 255, 0.8))`,
+                  borderRadius: "4px",
+                  boxShadow: `0 0 8px rgba(${hue}, 150, 255, 0.6)`,
+                  transform: `scaleY(${interpolate(a, [0, 1], [1, 1.1])})`,
+                  opacity: interpolate(a, [0, 1], [0.8, 1]),
+                }}
+              />
+            );
+          })}
         </div>
 
         {/* Progress Bar */}
