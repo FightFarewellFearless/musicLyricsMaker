@@ -8,7 +8,7 @@ import { romanize, translateLyric } from './src/googletranslate.js';
 import { execSync } from 'child_process';
 const tr = trr.default;
 
-import { Innertube, UniversalCache, Platform, Types } from 'youtubei.js/web';
+import { UniversalCache, Platform, Types } from 'youtubei.js/web';
 
 Platform.shim.eval = async (data, env) => {
   const properties = [];
