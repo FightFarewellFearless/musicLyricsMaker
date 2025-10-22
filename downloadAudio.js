@@ -8,6 +8,26 @@ import { romanize, translateLyric } from './src/googletranslate.js';
 import { execSync } from 'child_process';
 const tr = trr.default;
 
+import { Innertube, UniversalCache, Platform, Types } from 'youtubei.js/web';
+
+Platform.shim.eval = async (data, env) => {
+  const properties = [];
+
+  if(env.n) {
+    properties.push(`n: exportedVars.nFunction("${env.n}")`)
+  }
+
+  if (env.sig) {
+    properties.push(`sig: exportedVars.sigFunction("${env.sig}")`)
+  }
+
+  const code = `${data.output}\nreturn { ${properties.join(', ')} }`;
+
+  return new Function(code)();
+}
+
+// ...
+
 console.log("Initializing JSDOM...");
 const dom = new JSDOM();
 
