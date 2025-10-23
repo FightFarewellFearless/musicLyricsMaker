@@ -90,7 +90,11 @@ export async function downloadMusicFile(title) {
         type: 'song'
     });
 
-    const musicurl = await (await innertube.getInfo(video.songs.contents[0].id)).streaming_data.formats[0].decipher(innertube.session.player);
+    console.log(video);
+    const idInfo = video.songs.contents[0].id;
+    const dataInfo = await innertube.music.getInfo(idInfo);
+    console.log(idInfo, dataInfo)
+    const musicurl = await dataInfo.streaming_data.formats[0].decipher(innertube.session.player);
 
     console.log("Downloading music file...");
     const download = await fetch(musicurl).then(a => a.arrayBuffer()).then(a => Buffer.from(a));
