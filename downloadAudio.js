@@ -91,7 +91,7 @@ export async function downloadMusicFile(title) {
     });
 
     console.log(video);
-    const idInfo = video.songs.contents[0].id;
+    const idInfo = video.results[0].video_id;
     const dataInfo = await innertube.getInfo(idInfo);
     console.log(idInfo, dataInfo)
     const musicurl = await dataInfo.streaming_data.formats[0].decipher(innertube.session.player);
