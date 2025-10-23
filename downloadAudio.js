@@ -86,7 +86,7 @@ const innertube = await Innertube.create({
 
 export async function downloadMusicFile(title) {
     console.log("Searching for music:", title);
-    const video = await innertube.music.search(title, {
+    const video = await innertube.search(title, {
         type: 'song'
     });
 
