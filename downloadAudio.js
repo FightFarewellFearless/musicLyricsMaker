@@ -74,7 +74,7 @@ const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
     return (poTokenResult.poToken);
 });
 
-console.log("Creating Innertube instance with PoToken...");
+console.log("Creating Innertube instance with PoToken...", pot);
 const innertube = await Innertube.create({
     //cache: new UniversalCache(true),
     //player_id: '0004de42',
