@@ -37,7 +37,7 @@ Object.assign(globalThis, {
 });
 
 console.log("Creating Innertube instance...");
-const yt = await Innertube.create({ retrieve_player: false, });// client_type: 'WEB_CREATOR' });
+const yt = await Innertube.create({ retrieve_player: false, cookie: process.env.YT_COOKIE, });// client_type: 'WEB_CREATOR' });
 const requestKey = "O43z0dpjhgX20SCx4KAo";
 const visitorData = yt.session.context.client.visitorData;
 
