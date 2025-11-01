@@ -6,7 +6,6 @@ import { Innertube, UniversalCache } from 'youtubei.js';
 import props from './props.json' with { type: "json" };
 import { romanize, translateLyric } from './src/googletranslate.js';
 import { execSync } from 'child_process';
-const tr = trr.default;
 
 import { Platform } from 'youtubei.js/web';
 
@@ -26,7 +25,7 @@ Platform.shim.eval = async (data, env) => {
   return new Function(code)();
 }
 
-// ...
+const tr = trr.default;
 
 console.log("Initializing JSDOM...");
 const dom = new JSDOM();
@@ -37,7 +36,7 @@ Object.assign(globalThis, {
 });
 
 console.log("Creating Innertube instance...");
-const yt = await Innertube.create({ retrieve_player: false, cookie: process.env.YT_COOKIE, client_type: 'WEB' });
+const yt = await Innertube.create({ retrieve_player: false, client_type: 'WEB_CREATOR' });
 const requestKey = "O43z0dpjhgX20SCx4KAo";
 const visitorData = yt.session.context.client.visitorData;
 
@@ -74,27 +73,23 @@ const pot = await BG.Challenge.create(bgConfig).then(async (bg) => {
     return (poTokenResult.poToken);
 });
 
-console.log("Creating Innertube instance with PoToken...", pot);
+console.log("Creating Innertube instance with PoToken...");
 const innertube = await Innertube.create({
-    //cache: new UniversalCache(true),
-    //player_id: '0004de42',
+    // cache: new UniversalCache(true),
+    // player_id: '0004de42',
     cookie: process.env.YT_COOKIE,
     po_token: pot,
     visitor_data: visitorData,
-    client_type: 'WEB',
+    client_type: 'WEB_CREATOR',
 });
 
 export async function downloadMusicFile(title) {
     console.log("Searching for music:", title);
-    const video = await innertube.search(title, {
+    const video = await innertube.music.search(title, {
         type: 'song'
     });
 
-    console.log(video);
-    const idInfo = video.results[0].video_id;
-    const dataInfo = await innertube.getInfo(idInfo);
-    console.log(idInfo, dataInfo)
-    const musicurl = await dataInfo.streaming_data.formats[0].decipher(innertube.session.player);
+    const musicurl = await (await innertube.music.getInfo(video.songs.contents[0].id)).streaming_data.formats[0].decipher(innertube.session.player);
 
     console.log("Downloading music file...");
     const download = await fetch(musicurl).then(a => a.arrayBuffer()).then(a => Buffer.from(a));
