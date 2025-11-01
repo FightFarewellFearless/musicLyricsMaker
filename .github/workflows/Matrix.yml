@@ -30,6 +30,11 @@ jobs:
   mempersiapkan-data-yang-diperlukan:
     runs-on: ubuntu-latest
     steps:
+      - uses: Boostport/setup-cloudflare-warp@v1
+        with:
+         organization: your-organization
+         auth_client_id: ${{ secrets.CFClient }}
+         auth_client_secret: ${{ secrets.CFClient }}
       - uses: actions/checkout@main
       - uses: FedericoCarboni/setup-ffmpeg@v2
       - name: install dependencies
