@@ -30,6 +30,11 @@ jobs:
   mempersiapkan-data-yang-diperlukan:
     runs-on: ubuntu-latest
     steps:
+      - name: Set up WARP
+        uses: fscarmen/warp-on-actions@v1.4
+        with:
+          stack: dual        # Optional. Support [ ipv4, ipv6, dual ]. Default is dual.
+          mode: wireguard    # Optional. Support [ wireguard, client ]. Default is wireguard.
       - uses: actions/checkout@main
       - uses: FedericoCarboni/setup-ffmpeg@v2
       - name: install dependencies
