@@ -120,7 +120,7 @@ export async function downloadMusicFile(title) {
 
     if (props.background === 'default' && typeof props.background === 'string') {
         console.log("Fetching default background...");
-        props.background = await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
+        props.background = await fetch('https://api.github.com/repos/DenverCoder1/minimalistic-wallpaper-collection/contents/images')
             .then(res => res.json()).then(a => a.filter((a) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url);
     }
 
