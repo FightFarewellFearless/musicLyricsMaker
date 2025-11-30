@@ -9,7 +9,7 @@ interface VisualizeOptions {
   visualBarsCount?: number;
 }
 
-export default function getFullRangeSeparatedData({
+export default function getButterySmoothData({
   audioData,
   fps,
   frame,
@@ -29,14 +29,12 @@ export default function getFullRangeSeparatedData({
     });
 
     const sampleRate = 44100;
-    // KEMBALIKAN KE 20Hz (Sub-bass area)
     const minFreq = 20; 
     const maxFreq = 16000;
 
     const bars: number[] = [];
 
     for (let i = 0; i < visualBarsCount; i++) {
-      // Logarithmic Scale
       const startFreq = minFreq * Math.pow(maxFreq / minFreq, i / visualBarsCount);
       const endFreq = minFreq * Math.pow(maxFreq / minFreq, (i + 1) / visualBarsCount);
 
@@ -46,7 +44,6 @@ export default function getFullRangeSeparatedData({
       const actualStartIndex = startIndex;
       const actualEndIndex = Math.max(endIndex, startIndex + 1);
 
-      // Peak Detection
       let maxAmp = 0;
       for (let j = actualStartIndex; j < actualEndIndex; j++) {
         const amplitude = frequencyData[Math.min(j, frequencyData.length - 1)] || 0;
@@ -55,69 +52,66 @@ export default function getFullRangeSeparatedData({
         }
       }
 
-      // ---------------------------------------------------------
-      // ZONING STRATEGY (UPDATED UNTUK SUB-BASS)
-      // ---------------------------------------------------------
+      // --- WEIGHTING (Versi Natural yang Anda setujui sebelumnya) ---
       let weighting = 1;
-      const ratio = i / visualBarsCount;
-
-      // ZONA 1: SUB-BASS & KICK (0% - 16% area kiri)
-      // Karena minFreq = 20Hz, area ini sekarang mencakup getaran rendah DAN kick drum.
-      // Kita beri boost besar (1.8x - 2.0x) agar "nendang" dan "bergetar".
-      if (ratio < 0.16) {
-         // Sedikit gradasi: Sub-bass (paling kiri) butuh boost lebih besar dari Kick
-         weighting = 2.2 - (ratio * 2); 
-      }
-      
-      // ZONA 2: VOCAL / INSTRUMEN UTAMA (16% - 55%)
-      // Kita biarkan natural (weighting ~1.0)
-      else if (ratio < 0.55) {
-         weighting = 1.0;
-      }
-
-      // ZONA 3: THE SEPARATION GAP (55% - 62%)
-      // "Lembah" pemisah antara Vokal dan Treble.
-      // Kita tekan (0.7) agar terlihat ada jarak kosong visual.
-      else if (ratio < 0.62) {
-         weighting = 0.7; 
-      }
-
-      // ZONA 4: HIGH TREBLE / AIR (62% ke atas)
-      // Area Hi-hats, Cymbal, 'Sss'.
-      // Boost agresif agar tidak terlihat mati.
-      else {
-         const trebleProgress = (ratio - 0.62) / 0.38;
-         // Boost bertingkat dari 2x sampai 8x
-         weighting = 2 + (trebleProgress * 6);
+      if (i < 5) {
+         weighting = 1.8 - (i * 0.1); 
+      } else if (i > visualBarsCount * 0.6) {
+         const progress = (i - (visualBarsCount * 0.6)) / (visualBarsCount * 0.4);
+         weighting = 1 + (progress * 2);
       }
 
       const boostedAmp = maxAmp * weighting;
 
-      // Db Conversion
       const minDb = -70;
-      const maxDb = -10;
+      const maxDb = -12;
 
       const db = 20 * Math.log10(boostedAmp + 1e-10);
       const scaled = (db - minDb) / (maxDb - minDb);
 
       let finalValue = Math.min(Math.max(scaled, 0), 1);
-      finalValue = Math.pow(finalValue, 1.7);
+      finalValue = Math.pow(finalValue, 1.7); 
 
       bars.push(finalValue);
     }
     return bars;
   };
 
-  // --- LOGIKA SMOOTHING ---
+  // ------------------------------------------------------------------
+  // LOGIKA "BUTTERY SMOOTH" (ANTI-JITTER)
+  // ------------------------------------------------------------------
+
   const currentBars = calculateBars(frame);
   const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
 
   return currentBars.map((curr, i) => {
     const prev = prevBars[i];
+
+    // LOGIKA BARU:
+    
+    // 1. Kondisi NAIK (Attack)
     if (curr > prev) {
-      return curr; 
-    } else {
-      return (curr * 0.4) + (prev * 0.6); 
+      // Trik Anti-Jitter saat naik:
+      // Jangan langsung loncat 100% ke nilai baru (curr). 
+      // Kita ambil rata-rata sedikit dengan frame sebelumnya.
+      // Ini menghilangkan "spike" atau lonjakan noise tiba-tiba yang cuma 1 frame.
+      
+      // Bass (kiri) boleh responsif (0.8), Treble (kanan) lebih smooth (0.5)
+      const responsiveness = i < 10 ? 0.9 : 0.6; 
+      
+      return (curr * responsiveness) + (prev * (1 - responsiveness));
+    } 
+    
+    // 2. Kondisi TURUN (Decay) -> KUNCI UTAMA ANTI-GETAR
+    else {
+      // Kita buat turunnya LAMBAT (Gravity effect).
+      // Kita pertahankan 85% - 90% dari tinggi sebelumnya.
+      // Semakin besar angka smoothFactor, semakin "malas" turunnya (makin smooth).
+      
+      // Bass turun lebih cepat (biar ritmis), Treble turun lambat (biar elegan)
+      const smoothFactor = i < 10 ? 0.85 : 0.92; 
+      
+      return (curr * (1 - smoothFactor)) + (prev * smoothFactor);
     }
   });
 }

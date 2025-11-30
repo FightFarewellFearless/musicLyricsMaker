@@ -328,7 +328,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
           }}
         >
           {visualization.map((a, i) => {
-            const height = interpolate(a, [0, 1], [5, 75], {
+            const height = interpolate(a, [0, 1], [5, 65], {
               extrapolateLeft: "clamp",
               extrapolateRight: "clamp",
             });
