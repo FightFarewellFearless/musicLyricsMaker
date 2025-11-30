@@ -1,3 +1,5 @@
+import { useAudioData } from "@remotion/media-utils";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   AbsoluteFill,
   Audio,
@@ -7,24 +9,22 @@ import {
   staticFile,
   useCurrentFrame,
   useCurrentScale,
-  useVideoConfig,
-  Video,
+  useVideoConfig
 } from "remotion";
-import { DefaultSchema } from "./Root";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useAudioData, visualizeAudio } from "@remotion/media-utils";
 import {
   Animated,
   Animation,
-  Move,
-  Scale,
-  Rotate,
   Ease,
+  Move,
+  Rotate,
+  Scale,
 } from "remotion-animated";
 import { z } from "zod";
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
+import { DefaultSchema } from "./Root";
 
 import { loadFont } from "@remotion/google-fonts/NotoSansJP";
+import normalizeAudioData from "./normalizeAudioData";
 const { fontFamily: fontFamilyJP } = loadFont();
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
@@ -97,46 +97,10 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
   const totalDuration = `${String(Math.floor(durationInFrames / fps / 60)).padStart(2, "0")}:${String(Math.floor((durationInFrames / fps) % 60)).padStart(2, "0")}`;
 
   if (!audioData) return null;
-  const frequencyDataNext = visualizeAudio({
-    fps,
-    frame: frame + 1,
+  const visualization = normalizeAudioData({
     audioData,
-    numberOfSamples: 64,
-    optimizeFor: "accuracy",
-    smoothing: true,
-  });
-  const frequencyDataNextTwo = visualizeAudio({
-    fps,
-    frame: frame + 2,
-    audioData,
-    numberOfSamples: 64,
-    optimizeFor: "accuracy",
-    smoothing: true,
-  });
-  const frequencyData = visualizeAudio({
     fps,
     frame,
-    audioData,
-    numberOfSamples: 64,
-    optimizeFor: "accuracy",
-    smoothing: true,
-  });
-  const minDb = -50;
-  const maxDb = -5;
-  const clampNumberBetween0and1 = (num: number) =>
-    Math.min(Math.max(num, 0), 1);
-  const visualization = frequencyData.map((value, index) => {
-    function dbToHeight(val: number) {
-      const db = 20 * Math.log10(val);
-      const scaled = (db - minDb) / (maxDb - minDb);
-
-      return Math.pow(clampNumberBetween0and1(scaled), 0.85);
-    }
-    const height = dbToHeight(value);
-    const heightNext = dbToHeight(frequencyDataNext[index]);
-    const heightNextTwo = dbToHeight(frequencyDataNextTwo[index]);
-    const smoothHeight = (height + heightNext + heightNextTwo) / 3;
-    return smoothHeight;
   });
   return (
     <>
