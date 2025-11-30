@@ -9,7 +9,7 @@ interface VisualizeOptions {
   visualBarsCount?: number;
 }
 
-export default function getButterySmoothData({
+export default function getResponsiveTrebleData({
   audioData,
   fps,
   frame,
@@ -52,13 +52,24 @@ export default function getButterySmoothData({
         }
       }
 
-      // --- WEIGHTING (Versi Natural yang Anda setujui sebelumnya) ---
+      // --- 1. WEIGHTING YANG LEBIH AGRESIF UNTUK TREBLE ---
       let weighting = 1;
+
+      // KICK / BASS (Bar 0 - 5)
       if (i < 5) {
          weighting = 1.8 - (i * 0.1); 
-      } else if (i > visualBarsCount * 0.6) {
-         const progress = (i - (visualBarsCount * 0.6)) / (visualBarsCount * 0.4);
-         weighting = 1 + (progress * 2);
+      } 
+      // CLAP / SNARE / HI-HAT (Mulai dari 20% bar ke atas)
+      // Kita majukan start boost-nya agar Clap (Mid-freq) kena dampaknya.
+      else if (i > visualBarsCount * 0.2) {
+         // Progress 0.0 sampai 1.0
+         const progress = (i - (visualBarsCount * 0.2)) / (visualBarsCount * 0.8);
+         
+         // FORMULA BARU:
+         // Kita gunakan pangkat kuadrat (progress * progress) agar boost di ujung kanan EKSTRIM.
+         // Hi-hats yang sangat lemah akan dikali sampai 12x lipat.
+         // Clap (di tengah) akan dikali sekitar 2x - 4x.
+         weighting = 1 + (progress * progress * 12);
       }
 
       const boostedAmp = maxAmp * weighting;
@@ -77,39 +88,34 @@ export default function getButterySmoothData({
     return bars;
   };
 
-  // ------------------------------------------------------------------
-  // LOGIKA "BUTTERY SMOOTH" (ANTI-JITTER)
-  // ------------------------------------------------------------------
-
+  // --- 2. LOGIKA RESPONSIVITAS BARU ---
+  
   const currentBars = calculateBars(frame);
   const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
 
   return currentBars.map((curr, i) => {
     const prev = prevBars[i];
 
-    // LOGIKA BARU:
-    
-    // 1. Kondisi NAIK (Attack)
+    // KONDISI NAIK (ATTACK) -> "SNAP!"
     if (curr > prev) {
-      // Trik Anti-Jitter saat naik:
-      // Jangan langsung loncat 100% ke nilai baru (curr). 
-      // Kita ambil rata-rata sedikit dengan frame sebelumnya.
-      // Ini menghilangkan "spike" atau lonjakan noise tiba-tiba yang cuma 1 frame.
+      // PERUBAHAN PENTING DISINI:
+      // Bass (kiri): Kita beri sedikit smoothing (0.85) agar terlihat berbobot.
+      // Treble (kanan): HARUS 1.0 (Instant).
+      // Kenapa? Karena suara Hi-hat itu durasinya mikro-detik.
+      // Kalau kita rata-rata (smooth), puncaknya hilang duluan sebelum ter-render.
       
-      // Bass (kiri) boleh responsif (0.8), Treble (kanan) lebih smooth (0.5)
-      const responsiveness = i < 10 ? 0.9 : 0.6; 
+      const isBass = i < 10;
+      const responsiveness = isBass ? 0.85 : 1.0; 
       
       return (curr * responsiveness) + (prev * (1 - responsiveness));
     } 
     
-    // 2. Kondisi TURUN (Decay) -> KUNCI UTAMA ANTI-GETAR
+    // KONDISI TURUN (DECAY) -> "SMOOTH..."
     else {
-      // Kita buat turunnya LAMBAT (Gravity effect).
-      // Kita pertahankan 85% - 90% dari tinggi sebelumnya.
-      // Semakin besar angka smoothFactor, semakin "malas" turunnya (makin smooth).
+      // Saat turun, kita perlambat agar tidak bergetar (anti-jitter).
+      // Treble kita buat turunnya sangat lambat (0.94) agar terlihat 'mahal' dan jelas.
       
-      // Bass turun lebih cepat (biar ritmis), Treble turun lambat (biar elegan)
-      const smoothFactor = i < 10 ? 0.85 : 0.92; 
+      const smoothFactor = i < 10 ? 0.85 : 0.94; 
       
       return (curr * (1 - smoothFactor)) + (prev * smoothFactor);
     }
