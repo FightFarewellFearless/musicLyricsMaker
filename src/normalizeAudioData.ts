@@ -9,7 +9,7 @@ interface VisualizeOptions {
   visualBarsCount?: number;
 }
 
-export default function getSmoothedFrequencyData({
+export default function getSeparatedFrequencyData({
   audioData,
   fps,
   frame,
@@ -29,7 +29,9 @@ export default function getSmoothedFrequencyData({
     });
 
     const sampleRate = 44100;
-    const minFreq = 20;
+    // Tweak: Naikkan minFreq ke 40Hz agar kita tidak membuang bar untuk sub-bass yang tak terdengar
+    // Ini memberi lebih banyak ruang (bar) untuk Vocal dan Treble agar terpisah.
+    const minFreq = 40; 
     const maxFreq = 16000;
 
     const bars: number[] = [];
@@ -55,41 +57,52 @@ export default function getSmoothedFrequencyData({
       }
 
       // ---------------------------------------------------------
-      // PERUBAHAN UTAMA: SENSITIVITY WEIGHTING
+      // ZONING STRATEGY (PEMISAHAN WILAYAH)
       // ---------------------------------------------------------
       let weighting = 1;
 
-      if (i < 5) {
-        // Area BASS (Tetap)
-        weighting = 1.8 - (i * 0.1); 
-      } 
-      // Area CLAP/SNARE/TREBLE (Dimulai dari 25% bar, bukan 60%)
-      // Clap biasanya ada di index 16 ke atas (dari 64 bar)
-      else if (i > visualBarsCount * 0.25) {
-        
-        // Kita hitung seberapa jauh posisi bar saat ini dari titik mulai (0.25)
-        const progress = (i - (visualBarsCount * 0.25)) / (visualBarsCount * 0.75);
-        
-        // FORMULA BARU:
-        // Kita boost secara eksponensial.
-        // Di awal (area clap) naik 2x, di ujung (hi-hat) naik sampai 8x lipat.
-        // Ini mengkompensasi energi treble yang kecil.
-        weighting = 1 + (progress * 8); 
+      // Rasio posisi bar saat ini (0.0 sampai 1.0)
+      const ratio = i / visualBarsCount;
+
+      // ZONA 1: BASS & KICK (0% - 10% bar pertama)
+      if (ratio < 0.1) {
+         weighting = 1.8; 
+      }
+      
+      // ZONA 2: VOCAL / MID RANGE (10% - 55%)
+      // Vokal biasanya sangat keras, jadi kita JANGAN boost terlalu besar.
+      // Kita biarkan natural (sekitar 1.0 - 1.2) agar tidak "memakan" treble.
+      else if (ratio < 0.55) {
+         weighting = 1.2;
+      }
+
+      // ZONA 3: GAP / PEMISAH (55% - 65%)
+      // Ini trik visual: Kita sedikit "tekan" area transisi antara vokal dan treble.
+      // Ini menciptakan "lembah" visual agar vokal dan treble tidak terlihat menyatu.
+      else if (ratio < 0.65) {
+         weighting = 0.8; // Sedikit diturunkan (attenuation)
+      }
+
+      // ZONA 4: HIGH TREBLE / AIR (65% ke atas)
+      // Ini area 'Sss', hi-hats, dan cymbals.
+      // Karena energinya kecil, kita boost GILA-GILAAN secara eksponensial.
+      else {
+         // Progress dari 0.0 (awal zona treble) sampai 1.0 (ujung kanan)
+         const trebleProgress = (ratio - 0.65) / 0.35;
+         // Boost dari 2x sampai 8x lipat
+         weighting = 2 + (trebleProgress * 6);
       }
 
       const boostedAmp = maxAmp * weighting;
 
       // Db Conversion
       const minDb = -70;
-      const maxDb = -10; // Pertahankan -10 agar tidak terlalu mudah clipping
+      const maxDb = -10;
 
       const db = 20 * Math.log10(boostedAmp + 1e-10);
       const scaled = (db - minDb) / (maxDb - minDb);
 
       let finalValue = Math.min(Math.max(scaled, 0), 1);
-
-      // Contrast Curve
-      // Sedikit dikurangi dari 1.8 ke 1.7 agar treble yang lemah tidak "mati" karena curve
       finalValue = Math.pow(finalValue, 1.7);
 
       bars.push(finalValue);
@@ -97,16 +110,16 @@ export default function getSmoothedFrequencyData({
     return bars;
   };
 
-  // --- LOGIKA SMOOTHING (Tetap Sama karena sudah bagus) ---
+  // --- LOGIKA SMOOTHING ---
   const currentBars = calculateBars(frame);
   const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
 
   return currentBars.map((curr, i) => {
     const prev = prevBars[i];
     if (curr > prev) {
-      return curr; // Instant Attack
+      return curr; 
     } else {
-      return (curr * 0.4) + (prev * 0.6); // Smooth Decay
+      return (curr * 0.4) + (prev * 0.6); 
     }
   });
 }
