@@ -6,82 +6,112 @@ interface VisualizeOptions {
   audioData: MediaUtilsAudioData;
   fps: number;
   frame: number;
-  visualBarsCount?: number; // Optional, default nanti di set
+  visualBarsCount?: number;
 }
 
-export default function getHighResFrequencyData({
+export default function getSmoothedFrequencyData({
   audioData,
   fps,
   frame,
-  visualBarsCount = 64, // Default ke 64 sesuai request
+  visualBarsCount = 64,
 }: VisualizeOptions) {
-  
-  // 1. MAX RESOLUTION
-  // 4096 memberikan resolusi sekitar ~5Hz per bin.
-  // Ini memisahkan Sub-bass (30Hz) dan Kick (60Hz) dengan sangat tegas.
-  const fftSize = 4096; 
-  
-  const frequencyData = visualizeAudio({
-    fps,
-    frame,
-    audioData,
-    numberOfSamples: fftSize,
-    optimizeFor: "accuracy",
-    smoothing: false, // MATIKAN smoothing bawaan remotion untuk akurasi 'hit' instan
-  });
 
-  const sampleRate = 44100; 
-  // Kita persempit sedikit range-nya agar bar tidak kosong di ujung
-  const minFreq = 20;   
-  const maxFreq = 16000; // Di atas 16k biasanya hanya "udara"/desis halus
+  // Fungsi Helper: Menghitung data raw untuk satu frame spesifik
+  const calculateBars = (targetFrame: number) => {
+    // 1. MAX RESOLUTION
+    const fftSize = 4096;
 
-  const logData: number[] = [];
+    const frequencyData = visualizeAudio({
+      fps,
+      frame: targetFrame,
+      audioData,
+      numberOfSamples: fftSize,
+      optimizeFor: "accuracy",
+      smoothing: false, // Tetap FALSE agar data mentahnya akurat
+    });
 
-  for (let i = 0; i < visualBarsCount; i++) {
-    // Logarithmic Scale Logic
-    const startFreq = minFreq * Math.pow(maxFreq / minFreq, i / visualBarsCount);
-    const endFreq = minFreq * Math.pow(maxFreq / minFreq, (i + 1) / visualBarsCount);
+    const sampleRate = 44100;
+    const minFreq = 20;
+    const maxFreq = 16000;
 
-    const startIndex = Math.floor((startFreq / (sampleRate / 2)) * frequencyData.length);
-    const endIndex = Math.floor((endFreq / (sampleRate / 2)) * frequencyData.length);
+    const bars: number[] = [];
 
-    const actualStartIndex = startIndex;
-    const actualEndIndex = Math.max(endIndex, startIndex + 1);
+    for (let i = 0; i < visualBarsCount; i++) {
+      // Logarithmic Scale
+      const startFreq = minFreq * Math.pow(maxFreq / minFreq, i / visualBarsCount);
+      const endFreq = minFreq * Math.pow(maxFreq / minFreq, (i + 1) / visualBarsCount);
 
-    // 2. PEAK DETECTION (Pengganti Rata-rata)
-    // Alih-alih rata-rata, kita cari nilai TERTINGGI (peak) di range ini.
-    // Ini membuat visualizer sangat responsif terhadap beat.
-    let maxAmp = 0;
-    for (let j = actualStartIndex; j < actualEndIndex; j++) {
-      const amplitude = frequencyData[Math.min(j, frequencyData.length - 1)] || 0;
-      if (amplitude > maxAmp) {
-        maxAmp = amplitude;
+      const startIndex = Math.floor((startFreq / (sampleRate / 2)) * frequencyData.length);
+      const endIndex = Math.floor((endFreq / (sampleRate / 2)) * frequencyData.length);
+
+      const actualStartIndex = startIndex;
+      const actualEndIndex = Math.max(endIndex, startIndex + 1);
+
+      // Peak Detection
+      let maxAmp = 0;
+      for (let j = actualStartIndex; j < actualEndIndex; j++) {
+        const amplitude = frequencyData[Math.min(j, frequencyData.length - 1)] || 0;
+        if (amplitude > maxAmp) {
+          maxAmp = amplitude;
+        }
       }
+
+      // Sensitivity Weighting (Bass Boost)
+      let weighting = 1;
+      if (i < 5) {
+        weighting = 1.8 - (i * 0.1);
+      } else if (i > visualBarsCount * 0.6) {
+        weighting = 1.5 + ((i - visualBarsCount * 0.6) / (visualBarsCount * 0.4)) * 3;
+      }
+
+      const boostedAmp = maxAmp * weighting;
+
+      // Db Conversion
+      const minDb = -70;
+      const maxDb = -10;
+
+      const db = 20 * Math.log10(boostedAmp + 1e-10);
+      const scaled = (db - minDb) / (maxDb - minDb);
+
+      let finalValue = Math.min(Math.max(scaled, 0), 1);
+
+      // Contrast Curve
+      finalValue = Math.pow(finalValue, 1.8);
+
+      bars.push(finalValue);
     }
+    return bars;
+  };
 
-    // 3. SPECTRAL BALANCING (High Frequency Boost)
-    // Musik cenderung memiliki energi bass besar dan treble kecil (Pink Noise).
-    // Kita kalikan frekuensi tinggi agar visualnya terlihat rata tingginya.
-    // Semakin ke kanan (i makin besar), multiplier makin besar.
-    const multiplier = 1 + (i / visualBarsCount) * 2.5; 
-    const boostedAmp = maxAmp * multiplier;
+  // ------------------------------------------------------------------
+  // LOGIKA SMOOTHING "ATTACK/DECAY"
+  // ------------------------------------------------------------------
 
-    // 4. DECIBEL CONVERSION
-    // Range dinamis disesuaikan untuk musik modern
-    const minDb = -70; // Noise floor
-    const maxDb = -10; // Ceiling
+  // 1. Ambil data frame saat ini
+  const currentBars = calculateBars(frame);
 
-    const db = 20 * Math.log10(boostedAmp + 1e-10);
-    const scaled = (db - minDb) / (maxDb - minDb);
-    
-    // Output 0-1
-    let finalValue = Math.min(Math.max(scaled, 0), 1);
-    
-    // Opsional: Sedikit curve agar bar rendah tidak terlalu "jittery"
-    finalValue = finalValue * finalValue; 
+  // 2. Ambil data frame sebelumnya (jika ada)
+  //    Ini menambah beban render sedikit, tapi hasilnya jauh lebih pro.
+  const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
 
-    logData.push(finalValue);
-  }
+  // 3. Blend keduanya
+  return currentBars.map((curr, i) => {
+    const prev = prevBars[i];
 
-  return logData;
+    // Logika Kunci:
+    // Jika Curr > Prev (Suara naik/Kick): Gunakan Curr langsung (Instant Attack)
+    // Jika Curr < Prev (Suara turun): Gunakan rata-rata (Smooth Decay)
+
+    if (curr > prev) {
+      // Opsi A: Sangat responsif (Jump langsung)
+      return curr;
+
+      // Opsi B: Jika ingin sedikit lebih halus saat naik, gunakan:
+      // return (curr * 0.8) + (prev * 0.2);
+    } else {
+      // Saat turun, kita perlambat agar tidak terlihat "bergetar"
+      // Semakin besar porsi 'prev', semakin lambat turunnya (seperti gravitasi)
+      return (curr * 0.4) + (prev * 0.6);
+    }
+  });
 }
