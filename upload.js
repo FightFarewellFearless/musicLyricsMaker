@@ -1,6 +1,7 @@
 import { createReadStream } from 'fs';
 import { google } from 'googleapis';
 import props from './props.json' with { type: "json" };
+import synchronizeLyrics from './public/syncronizeLyrics.json' with { type: "json" };
 import dotenv from 'dotenv';
 dotenv.config();
 const { OAuth2 } = google.auth;
@@ -45,7 +46,13 @@ async function uploadVideo(title, description, video) {
     console.log(res.data);
 }
 
-const description = `Check out "${props.musicTitle}"! 
-Hope you enjoy it as much as we loved making it.`;
+const description = `
+${props.musicTitle}
+Lyrics:
+${synchronizeLyrics.map(line => line.text).join('\n')}
+
+Don't forget to like, comment, and subscribe for more music videos!
+#lyrics #music
+`;
 
 uploadVideo(props.musicTitle + ' (Lyrics)', description, createReadStream('./video/video.mp4'));
