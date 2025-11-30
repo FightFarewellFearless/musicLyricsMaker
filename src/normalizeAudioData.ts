@@ -9,7 +9,7 @@ interface VisualizeOptions {
   visualBarsCount?: number;
 }
 
-export default function getSeparatedFrequencyData({
+export default function getFullRangeSeparatedData({
   audioData,
   fps,
   frame,
@@ -29,9 +29,8 @@ export default function getSeparatedFrequencyData({
     });
 
     const sampleRate = 44100;
-    // Tweak: Naikkan minFreq ke 40Hz agar kita tidak membuang bar untuk sub-bass yang tak terdengar
-    // Ini memberi lebih banyak ruang (bar) untuk Vocal dan Treble agar terpisah.
-    const minFreq = 40; 
+    // KEMBALIKAN KE 20Hz (Sub-bass area)
+    const minFreq = 20; 
     const maxFreq = 16000;
 
     const bars: number[] = [];
@@ -57,39 +56,38 @@ export default function getSeparatedFrequencyData({
       }
 
       // ---------------------------------------------------------
-      // ZONING STRATEGY (PEMISAHAN WILAYAH)
+      // ZONING STRATEGY (UPDATED UNTUK SUB-BASS)
       // ---------------------------------------------------------
       let weighting = 1;
-
-      // Rasio posisi bar saat ini (0.0 sampai 1.0)
       const ratio = i / visualBarsCount;
 
-      // ZONA 1: BASS & KICK (0% - 10% bar pertama)
-      if (ratio < 0.1) {
-         weighting = 1.8; 
+      // ZONA 1: SUB-BASS & KICK (0% - 16% area kiri)
+      // Karena minFreq = 20Hz, area ini sekarang mencakup getaran rendah DAN kick drum.
+      // Kita beri boost besar (1.8x - 2.0x) agar "nendang" dan "bergetar".
+      if (ratio < 0.16) {
+         // Sedikit gradasi: Sub-bass (paling kiri) butuh boost lebih besar dari Kick
+         weighting = 2.2 - (ratio * 2); 
       }
       
-      // ZONA 2: VOCAL / MID RANGE (10% - 55%)
-      // Vokal biasanya sangat keras, jadi kita JANGAN boost terlalu besar.
-      // Kita biarkan natural (sekitar 1.0 - 1.2) agar tidak "memakan" treble.
+      // ZONA 2: VOCAL / INSTRUMEN UTAMA (16% - 55%)
+      // Kita biarkan natural (weighting ~1.0)
       else if (ratio < 0.55) {
-         weighting = 1.2;
+         weighting = 1.0;
       }
 
-      // ZONA 3: GAP / PEMISAH (55% - 65%)
-      // Ini trik visual: Kita sedikit "tekan" area transisi antara vokal dan treble.
-      // Ini menciptakan "lembah" visual agar vokal dan treble tidak terlihat menyatu.
-      else if (ratio < 0.65) {
-         weighting = 0.8; // Sedikit diturunkan (attenuation)
+      // ZONA 3: THE SEPARATION GAP (55% - 62%)
+      // "Lembah" pemisah antara Vokal dan Treble.
+      // Kita tekan (0.7) agar terlihat ada jarak kosong visual.
+      else if (ratio < 0.62) {
+         weighting = 0.7; 
       }
 
-      // ZONA 4: HIGH TREBLE / AIR (65% ke atas)
-      // Ini area 'Sss', hi-hats, dan cymbals.
-      // Karena energinya kecil, kita boost GILA-GILAAN secara eksponensial.
+      // ZONA 4: HIGH TREBLE / AIR (62% ke atas)
+      // Area Hi-hats, Cymbal, 'Sss'.
+      // Boost agresif agar tidak terlihat mati.
       else {
-         // Progress dari 0.0 (awal zona treble) sampai 1.0 (ujung kanan)
-         const trebleProgress = (ratio - 0.65) / 0.35;
-         // Boost dari 2x sampai 8x lipat
+         const trebleProgress = (ratio - 0.62) / 0.38;
+         // Boost bertingkat dari 2x sampai 8x
          weighting = 2 + (trebleProgress * 6);
       }
 
