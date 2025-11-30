@@ -22,10 +22,19 @@ import {
 import { z } from "zod";
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 import { DefaultSchema } from "./Root";
-
-import { loadFont } from "@remotion/google-fonts/NotoSansJP";
 import normalizeAudioData from "./normalizeAudioData";
-const { fontFamily: fontFamilyJP } = loadFont();
+
+import { loadFont as loadFontNoto } from "@remotion/google-fonts/NotoSans";
+import { loadFont as loadFontAR } from "@remotion/google-fonts/NotoSansArabic";
+import { loadFont as loadFontJP } from "@remotion/google-fonts/NotoSansJP";
+import { loadFont as loadFontKR } from "@remotion/google-fonts/NotoSansKR";
+import { loadFont as loadFontSC } from "@remotion/google-fonts/NotoSansSC";
+const { fontFamily: fontBase } = loadFontNoto();
+const { fontFamily: fontJP } = loadFontJP();
+const { fontFamily: fontKR } = loadFontKR();
+const { fontFamily: fontSC } = loadFontSC();
+const { fontFamily: fontArabic } = loadFontAR();
+const universalFontFamily = `${fontBase}, ${fontJP}, ${fontKR}, ${fontSC}, ${fontArabic}, sans-serif`;
 
 export default function Music(props: z.infer<typeof DefaultSchema>) {
   const music =
@@ -211,7 +220,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
                     color: "#ffffffc7",
                     fontSize: 30,
                     textAlign: "center",
-                    fontFamily: fontFamilyJP,
+                    fontFamily: universalFontFamily,
                     fontWeight: "bold",
                   }}
                 >
@@ -236,7 +245,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
                 color: "#ffffffc7",
                 fontSize: 30,
                 textAlign: "center",
-                fontFamily: fontFamilyJP,
+                fontFamily: universalFontFamily,
                 fontWeight: "bold",
               }}
             >
@@ -251,7 +260,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             textAlign: "center",
             opacity: 0.7,
             color: "white",
-            fontFamily: fontFamilyJP,
+            fontFamily: universalFontFamily,
           }}
         >
           {previousLyrics}
@@ -261,7 +270,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             style={{
               fontSize: 70,
               textAlign: "center",
-              fontFamily: fontFamilyJP,
+              fontFamily: universalFontFamily,
               fontWeight: "bold",
               color: "white",
               filter:
@@ -281,7 +290,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             textAlign: "center",
             opacity: 0.7,
             color: "white",
-            fontFamily: fontFamilyJP,
+            fontFamily: universalFontFamily,
           }}
         >
           {nextLyrics}
@@ -301,7 +310,7 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             bottom: 200,
             zIndex: 999,
             textAlign: "center",
-            fontFamily: fontFamilyJP,
+            fontFamily: universalFontFamily,
           }}
         >
           {translateCurrentLyrics}

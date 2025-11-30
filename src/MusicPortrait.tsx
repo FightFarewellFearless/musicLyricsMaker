@@ -1,4 +1,8 @@
-import { loadFont } from "@remotion/google-fonts/NotoSansJP";
+import { loadFont as loadFontNoto } from "@remotion/google-fonts/NotoSans";
+import { loadFont as loadFontAR } from "@remotion/google-fonts/NotoSansArabic";
+import { loadFont as loadFontJP } from "@remotion/google-fonts/NotoSansJP";
+import { loadFont as loadFontKR } from "@remotion/google-fonts/NotoSansKR";
+import { loadFont as loadFontSC } from "@remotion/google-fonts/NotoSansSC";
 import { useAudioData } from "@remotion/media-utils";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
@@ -24,7 +28,12 @@ import { z } from "zod";
 import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
 import normalizeAudioData from "./normalizeAudioData";
 import { DefaultSchema } from "./Root";
-const { fontFamily: fontFamilyJP } = loadFont();
+const { fontFamily: fontBase } = loadFontNoto();
+const { fontFamily: fontJP } = loadFontJP();
+const { fontFamily: fontKR } = loadFontKR();
+const { fontFamily: fontSC } = loadFontSC();
+const { fontFamily: fontArabic } = loadFontAR();
+const universalFontFamily = `${fontBase}, ${fontJP}, ${fontKR}, ${fontSC}, ${fontArabic}, sans-serif`;
 
 export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
   const music =
@@ -106,7 +115,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
     audioData,
     fps,
     frame,
-  })
+  });
 
   return (
     <>
@@ -207,7 +216,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
               color: "white",
               fontSize: 36,
               fontWeight: "bold",
-              fontFamily: fontFamilyJP,
+              fontFamily: universalFontFamily,
               opacity: 0.9,
               width: "80%",
               lineHeight: 1.3,
@@ -231,7 +240,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
               fontSize: 30,
               color: "#ffffffaa",
               marginBottom: 10,
-              fontFamily: fontFamilyJP,
+              fontFamily: universalFontFamily,
             }}
           >
             {previousLyrics}
@@ -243,7 +252,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
                 fontSize: 60,
                 color: "white",
                 fontWeight: "bold",
-                fontFamily: fontFamilyJP,
+                fontFamily: universalFontFamily,
                 filter:
                   "drop-shadow(0 0 5px #00b7ff) drop-shadow(0 0 15px #00b7ff)",
                 marginLeft: 40,
@@ -259,7 +268,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
               fontSize: 35,
               color: "#ffffffaa",
               marginTop: 10,
-              fontFamily: fontFamilyJP,
+              fontFamily: universalFontFamily,
             }}
           >
             {nextLyrics}
@@ -278,7 +287,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             fontStyle: "italic",
             textShadow: "0 0 3px #ff7300, 0 0 6px #ff7300, 0 0 10px #ff7300",
             color: "white",
-            fontFamily: fontFamilyJP,
+            fontFamily: universalFontFamily,
           }}
         >
           {translateCurrentLyrics}
