@@ -16,9 +16,7 @@ export default function getSmoothedFrequencyData({
   visualBarsCount = 64,
 }: VisualizeOptions) {
 
-  // Fungsi Helper: Menghitung data raw untuk satu frame spesifik
   const calculateBars = (targetFrame: number) => {
-    // 1. MAX RESOLUTION
     const fftSize = 4096;
 
     const frequencyData = visualizeAudio({
@@ -27,7 +25,7 @@ export default function getSmoothedFrequencyData({
       audioData,
       numberOfSamples: fftSize,
       optimizeFor: "accuracy",
-      smoothing: false, // Tetap FALSE agar data mentahnya akurat
+      smoothing: false, 
     });
 
     const sampleRate = 44100;
@@ -56,19 +54,34 @@ export default function getSmoothedFrequencyData({
         }
       }
 
-      // Sensitivity Weighting (Bass Boost)
+      // ---------------------------------------------------------
+      // PERUBAHAN UTAMA: SENSITIVITY WEIGHTING
+      // ---------------------------------------------------------
       let weighting = 1;
+
       if (i < 5) {
-        weighting = 1.8 - (i * 0.1);
-      } else if (i > visualBarsCount * 0.6) {
-        weighting = 1.5 + ((i - visualBarsCount * 0.6) / (visualBarsCount * 0.4)) * 3;
+        // Area BASS (Tetap)
+        weighting = 1.8 - (i * 0.1); 
+      } 
+      // Area CLAP/SNARE/TREBLE (Dimulai dari 25% bar, bukan 60%)
+      // Clap biasanya ada di index 16 ke atas (dari 64 bar)
+      else if (i > visualBarsCount * 0.25) {
+        
+        // Kita hitung seberapa jauh posisi bar saat ini dari titik mulai (0.25)
+        const progress = (i - (visualBarsCount * 0.25)) / (visualBarsCount * 0.75);
+        
+        // FORMULA BARU:
+        // Kita boost secara eksponensial.
+        // Di awal (area clap) naik 2x, di ujung (hi-hat) naik sampai 8x lipat.
+        // Ini mengkompensasi energi treble yang kecil.
+        weighting = 1 + (progress * 8); 
       }
 
       const boostedAmp = maxAmp * weighting;
 
       // Db Conversion
       const minDb = -70;
-      const maxDb = -10;
+      const maxDb = -10; // Pertahankan -10 agar tidak terlalu mudah clipping
 
       const db = 20 * Math.log10(boostedAmp + 1e-10);
       const scaled = (db - minDb) / (maxDb - minDb);
@@ -76,42 +89,24 @@ export default function getSmoothedFrequencyData({
       let finalValue = Math.min(Math.max(scaled, 0), 1);
 
       // Contrast Curve
-      finalValue = Math.pow(finalValue, 1.8);
+      // Sedikit dikurangi dari 1.8 ke 1.7 agar treble yang lemah tidak "mati" karena curve
+      finalValue = Math.pow(finalValue, 1.7);
 
       bars.push(finalValue);
     }
     return bars;
   };
 
-  // ------------------------------------------------------------------
-  // LOGIKA SMOOTHING "ATTACK/DECAY"
-  // ------------------------------------------------------------------
-
-  // 1. Ambil data frame saat ini
+  // --- LOGIKA SMOOTHING (Tetap Sama karena sudah bagus) ---
   const currentBars = calculateBars(frame);
-
-  // 2. Ambil data frame sebelumnya (jika ada)
-  //    Ini menambah beban render sedikit, tapi hasilnya jauh lebih pro.
   const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
 
-  // 3. Blend keduanya
   return currentBars.map((curr, i) => {
     const prev = prevBars[i];
-
-    // Logika Kunci:
-    // Jika Curr > Prev (Suara naik/Kick): Gunakan Curr langsung (Instant Attack)
-    // Jika Curr < Prev (Suara turun): Gunakan rata-rata (Smooth Decay)
-
     if (curr > prev) {
-      // Opsi A: Sangat responsif (Jump langsung)
-      return curr;
-
-      // Opsi B: Jika ingin sedikit lebih halus saat naik, gunakan:
-      // return (curr * 0.8) + (prev * 0.2);
+      return curr; // Instant Attack
     } else {
-      // Saat turun, kita perlambat agar tidak terlihat "bergetar"
-      // Semakin besar porsi 'prev', semakin lambat turunnya (seperti gravitasi)
-      return (curr * 0.4) + (prev * 0.6);
+      return (curr * 0.4) + (prev * 0.6); // Smooth Decay
     }
   });
 }
