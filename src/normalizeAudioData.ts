@@ -17,7 +17,8 @@ export default function getResponsiveTrebleData({
 }: VisualizeOptions) {
 
   const calculateBars = (targetFrame: number) => {
-    const fftSize = 4096;
+    // Tetap di 2048 untuk respon cepat (snappy)
+    const fftSize = 2048; 
 
     const frequencyData = visualizeAudio({
       fps,
@@ -25,12 +26,16 @@ export default function getResponsiveTrebleData({
       audioData,
       numberOfSamples: fftSize,
       optimizeFor: "accuracy",
-      smoothing: false, 
+      smoothing: true, 
     });
 
     const sampleRate = 44100;
-    const minFreq = 20; 
-    const maxFreq = 16000;
+    
+    // Range frekuensi difokuskan
+    // Max diturunkan sedikit ke 14000 agar bar paling kanan fokus ke suara "cis" hi-hat, 
+    // bukan "udara" (air/hiss) yang tidak terdengar.
+    const minFreq = 40; 
+    const maxFreq = 14000;
 
     const bars: number[] = [];
 
@@ -52,72 +57,47 @@ export default function getResponsiveTrebleData({
         }
       }
 
-      // --- 1. WEIGHTING YANG LEBIH AGRESIF UNTUK TREBLE ---
+      // --- PERBAIKAN UTAMA: DYNAMIC SPECTRAL BOOST ---
+      // Kita menyeimbangkan energi: Bass butuh sedikit boost, Treble butuh RAKSASA boost.
+      
       let weighting = 1;
+      const progress = i / visualBarsCount; // 0.0 (kiri) s/d 1.0 (kanan)
 
-      // KICK / BASS (Bar 0 - 5)
       if (i < 5) {
-         weighting = 1.8 - (i * 0.1); 
-      } 
-      // CLAP / SNARE / HI-HAT (Mulai dari 20% bar ke atas)
-      // Kita majukan start boost-nya agar Clap (Mid-freq) kena dampaknya.
-      else if (i > visualBarsCount * 0.2) {
-         // Progress 0.0 sampai 1.0
-         const progress = (i - (visualBarsCount * 0.2)) / (visualBarsCount * 0.8);
-         
-         // FORMULA BARU:
-         // Kita gunakan pangkat kuadrat (progress * progress) agar boost di ujung kanan EKSTRIM.
-         // Hi-hats yang sangat lemah akan dikali sampai 12x lipat.
-         // Clap (di tengah) akan dikali sekitar 2x - 4x.
-         weighting = 1 + (progress * progress * 12);
+         // AREA BASS: Boost moderat agar Kick tetap nendang
+         weighting = 2.5; 
+      } else {
+         // AREA MIDS & TREBLE: Exponential Growth
+         // Rumus ini membuat multiplier naik drastis semakin ke kanan.
+         // Di tengah (mids) ~4x boost
+         // Di ujung kanan (treble) ~24x boost
+         weighting = 2 + Math.pow(progress, 2) * 22;
       }
 
       const boostedAmp = maxAmp * weighting;
 
-      const minDb = -70;
-      const maxDb = -12;
+      // Settings dB
+      const minDb = -55; 
+      const maxDb = -10; 
 
       const db = 20 * Math.log10(boostedAmp + 1e-10);
       const scaled = (db - minDb) / (maxDb - minDb);
 
       let finalValue = Math.min(Math.max(scaled, 0), 1);
-      finalValue = Math.pow(finalValue, 1.7); 
+
+      // --- PERBAIKAN RESPONSIVITAS TREBLE ---
+      // Bass (kiri) butuh kurva tajam (pow 3.0) agar terlihat "thump-thump".
+      // Treble (kanan) sering hilang jika di-pow terlalu tinggi.
+      // Jadi kita kurangi pow untuk treble agar lebih mudah naik, tapi tetap bersih.
+      
+      const variablePow = 3.0 - (progress * 0.8); 
+      // Hasil: Kiri pakai pangkat 3.0 (Ketata), Kanan pakai pangkat 2.2 (Lebih sensitif)
+      
+      finalValue = Math.pow(finalValue, variablePow); 
 
       bars.push(finalValue);
     }
     return bars;
   };
-
-  // --- 2. LOGIKA RESPONSIVITAS BARU ---
-  
-  const currentBars = calculateBars(frame);
-  const prevBars = frame > 0 ? calculateBars(frame - 1) : currentBars.map(() => 0);
-
-  return currentBars.map((curr, i) => {
-    const prev = prevBars[i];
-
-    // KONDISI NAIK (ATTACK) -> "SNAP!"
-    if (curr > prev) {
-      // PERUBAHAN PENTING DISINI:
-      // Bass (kiri): Kita beri sedikit smoothing (0.85) agar terlihat berbobot.
-      // Treble (kanan): HARUS 1.0 (Instant).
-      // Kenapa? Karena suara Hi-hat itu durasinya mikro-detik.
-      // Kalau kita rata-rata (smooth), puncaknya hilang duluan sebelum ter-render.
-      
-      const isBass = i < 10;
-      const responsiveness = isBass ? 0.85 : 1.0; 
-      
-      return (curr * responsiveness) + (prev * (1 - responsiveness));
-    } 
-    
-    // KONDISI TURUN (DECAY) -> "SMOOTH..."
-    else {
-      // Saat turun, kita perlambat agar tidak bergetar (anti-jitter).
-      // Treble kita buat turunnya sangat lambat (0.94) agar terlihat 'mahal' dan jelas.
-      
-      const smoothFactor = i < 10 ? 0.85 : 0.94; 
-      
-      return (curr * (1 - smoothFactor)) + (prev * smoothFactor);
-    }
-  });
+  return calculateBars(frame);
 }
