@@ -106,22 +106,6 @@ export async function downloadMusicFile(title) {
   console.log("Converting music file to MP3...");
   execSync("ffmpeg -y -i ./public/music.mp4 ./public/music.mp3");
 
-  console.log("Starting audio separation...");
-  console.time("Separating audio tracks...");
-  execSync(`./venv/bin/audio-separator ./public/music.mp3 \\
-            --output_format=MP3 \\
-            --output_dir audio_output \\
-            --model_filename UVR-MDX-NET-Inst_HQ_4.onnx \\
-            --custom_output_names='{"Vocals": "vocals_output", "Drums": "drums_output", "Instrumental": "instrumental_output", "Bass": "bass_output"}'`);
-  console.timeEnd("Separating audio tracks...");
-
-  console.log("Moving separated audio files to public directory...");
-  fs.unlinkSync("./public/music.mp3");
-  fs.renameSync(
-    "./audio_output/instrumental_output.mp3",
-    "./public/music.mp3",
-  );
-
   console.log("Deleting temporary MP4 file...");
   fs.unlinkSync("./public/music.mp4");
 

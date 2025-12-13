@@ -30,49 +30,6 @@ jobs:
   mempersiapkan-data-yang-diperlukan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      # --- 1. APT CACHE (Local Folder Method) ---
-      # Caches .deb files to a local folder to avoid /var/cache permission errors
-      - name: Cache Apt Packages
-        uses: actions/cache@v4
-        with:
-          path: apt-cache
-          key: ${{ runner.os }}-apt-ffmpeg
-      
-      - name: Install Apt Deps
-        run: |
-          mkdir -p apt-cache
-          sudo apt-get update
-          # -o dir::cache::archives points apt to our local folder
-          sudo apt-get install -y ffmpeg -o dir::cache::archives="$PWD/apt-cache"
-          # Ensure we own the cache so GitHub can save it
-          sudo chown -R $USER apt-cache
-
-      # --- 2. PYTHON SETUP ---
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      # --- 3. VENV CACHE (Cache Installed Software) ---
-      - name: Cache Virtual Env
-        id: cache-venv
-        uses: actions/cache@v4
-        with:
-          path: venv
-          # Change 'v1' to 'v2' if you change your pip install command later
-          key: ${{ runner.os }}-venv-v1-audio-separator
-
-      - name: Install Dependencies
-        # This step is SKIPPED if the cache is found!
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: |
-          echo "Cache miss! Installing dependencies..."
-          python -m venv venv
-          source venv/bin/activate
-          pip install "audio-separator[cpu]"
-      
       - name: Set up WARP
         uses: fscarmen/warp-on-actions@v1.4
         with:
