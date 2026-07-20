@@ -8,5 +8,5 @@ import { Config } from "@remotion/cli/config";
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.setChromiumMultiProcessOnLinux(true);
-Config.setConcurrency(4);
+Config.setConcurrency(16);
 Config.setChromiumDisableWebSecurity(true);

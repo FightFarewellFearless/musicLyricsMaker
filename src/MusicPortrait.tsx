@@ -36,12 +36,7 @@ const { fontFamily: fontArabic } = loadFontAR();
 const universalFontFamily = `${fontBase}, ${fontJP}, ${fontKR}, ${fontSC}, ${fontArabic}, sans-serif`;
 
 export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
-  const music =
-    process.env.REMOTION_USE_LOCAL_DIR === "yes"
-      ? staticFile("music.mp3")
-      : `https://sebelasempat.hitam.id/api/ytMusic/${encodeURIComponent(
-          props.musicTitle,
-        )}`;
+  const music = staticFile("music.mp3");
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const duration = frame / fps;
@@ -133,12 +128,9 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
         <AbsoluteFill style={{ opacity: 0.5 }}>
           {typeof props.background === "string" ? (
             <Img
-              src={
-                process.env.REMOTION_USE_LOCAL_DIR === "yes"
-                  ? getStaticFiles().find((a) =>
+              src={getStaticFiles().find((a) =>
                       a.name.startsWith("background"),
                     )!.src
-                  : props.background
               }
               style={{
                 objectFit: "cover",
@@ -150,12 +142,9 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             <LoopableOffthreadVideo
               muted
               loop
-              src={
-                process.env.REMOTION_USE_LOCAL_DIR === "yes"
-                  ? getStaticFiles().find((a) =>
+              src={getStaticFiles().find((a) =>
                       a.name.startsWith("background"),
                     )!.src
-                  : props.background.video
               }
               style={{
                 objectFit: "cover",
@@ -194,13 +183,8 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             ]}
           >
             <Img
-              src={
-                process.env.REMOTION_USE_LOCAL_DIR === "yes"
-                  ? getStaticFiles().find((a) => a.name.startsWith("ytThumb"))!
+              src={getStaticFiles().find((a) => a.name.startsWith("ytThumb"))!
                       .src
-                  : `https://sebelasempat.hitam.id/api/ytm/thumbnail?url=${encodeURIComponent(
-                      props.ytmThumbnail,
-                    )}`
               }
               style={{
                 width: 180,

@@ -132,58 +132,18 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
   let searchData: APIRes;
   let ytmSearchResult: YTMSearch;
 
-  if (process.env.REMOTION_USE_LOCAL_DIR !== 'yes') {
-    ytmSearchResult = await fetch(
-      'https://sebelasempat.hitam.id/api/ytm/search?q=' + encodeURIComponent(props.musicTitle),
-      { signal: abortSignal }
-    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
-    const data: APIRes[] = await fetch(
-      "https://lrclib.net/api/search?q=" + encodeURIComponent(ytmSearchResult.title + " " + ytmSearchResult.artists.join(" ")),
-      { signal: abortSignal }
-    ).then((res) => res.json()).then((x: APIRes[]) => x.filter(a => a.syncedLyrics !== null)
-      .filter(a => Math.abs(a.duration - ytmSearchResult.duration) <= 2)
-      // @ts-ignore
-      .toSorted((a, b) => a.duration - b.duration));
-
-    searchData = data[props.searchLyricsIndex];
-
-    const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n")
-    syncronizeLyricsRaw.forEach(a => {
-      try {
-        const start = a.split("[")[1].split("]")[0];
-        const text = a.split("]")[1];
-        const [minutes, seconds] = start.split(":");
-        syncronizeLyrics.push({
-          start: (Number(minutes) * 60) + Number(seconds),
-          text,
-        });
-      } catch { };
-    });
-
-    const shouldRomanize = await checkRomanizationIsNeeded(searchData.syncedLyrics);
-
-    if(props.translateTo !== 'none') {
-      translateSyncronizeLyrics = await translateLyric(syncronizeLyrics, props.translateTo);
-    }
-    if (shouldRomanize) {
-     syncronizeLyrics = await romanize(syncronizeLyrics);
-    }
-    
-
-  } else {
     searchData = await fetch(staticFile('searchData.json')).then(a => a.json());
     ytmSearchResult = await fetch(
       staticFile('search.json')
     ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
     syncronizeLyrics = await fetch(staticFile('syncronizeLyrics.json')).then(a => a.json());
     translateSyncronizeLyrics = await fetch(staticFile('translateSyncronizeLyrics.json')).then(a => a.json());
-  }
 
   let { background } = props;
 
-  if (props.background === 'default' && typeof props.background === 'string' && process.env.REMOTION_USE_LOCAL_DIR !== 'yes') {
-    background = process.env.REMOTION_USE_LOCAL_DIR === 'yes' ? await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
-      .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url) : await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
+  if (props.background === 'default' && typeof props.background === 'string') {
+    background = await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
+      .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url);
   }
 
   return {

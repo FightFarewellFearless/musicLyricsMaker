@@ -32,12 +32,7 @@ export default function ThumbnailCreator(
     height: 40 + Math.floor(random(seed + i) * 60),
   }));
 
-  const bgSrc =
-    process.env.REMOTION_USE_LOCAL_DIR === "yes"
-      ? getStaticFiles().find((a) => a.name.startsWith("background"))!.src
-      : typeof props.background === "string"
-        ? props.background
-        : props.background.video;
+  const bgSrc = getStaticFiles().find((a) => a.name.startsWith("background"))!.src
 
   return (
     <AbsoluteFill>
