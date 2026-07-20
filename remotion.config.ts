@@ -10,5 +10,5 @@ Config.setOverwriteOutput(true);
 Config.setChromiumMultiProcessOnLinux(true);
 Config.setConcurrency(4);
 Config.setChromiumDisableWebSecurity(true);
-Config.setBrowserExecutable('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe');
+// Config.setBrowserExecutable('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe');
 
