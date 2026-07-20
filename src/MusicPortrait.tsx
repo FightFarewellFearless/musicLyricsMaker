@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { AbsoluteFill, getStaticFiles, Img, Sequence } from "remotion";
 import { DefaultSchema } from "./Root";
-import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
+import { Video } from "@remotion/media";
 import { TrackRenderer } from "./TrackRenderer";
 import { TrackList } from "./TrackList";
 
@@ -29,7 +29,7 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
             }}
           />
         ) : (
-          <LoopableOffthreadVideo
+          <Video
             muted
             loop
             src={getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""}
@@ -42,12 +42,10 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
         )}
       </AbsoluteFill>
 
-      {/* Overlay (soft vignette) */}
+      {/* Dark overlay to improve text legibility */}
       <AbsoluteFill
         style={{
-          backdropFilter: "blur(3px)",
-          background:
-            "radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%)",
+          background: "rgba(0,0,0,0.45)",
         }}
       />
 

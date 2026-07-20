@@ -12,14 +12,17 @@ on:
         required: true
         default: |
           {
-          "musicTitle": "Everything goes on - Porter Robinson",
-          "syncronizeLyrics": [],
-          "background": {
-            "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
-          },
-          "ytmMusicInfo": "",
-          "ytmThumbnail": "",
-          "searchLyricsIndex": 0
+            "musicTitle": "Porter Robinson Hits",
+            "background": {
+              "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
+            },
+            "translateTo": "none",
+            "tracks": [
+              {
+                "musicTitle": "everything goes on porter robinson",
+                "searchLyricsIndex": 0
+              }
+            ]
           }
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -40,14 +43,15 @@ jobs:
     - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Create out folder
       run: mkdir out
-    - run: echo $WORKFLOW_INPUT > input-props.json
+    - name: Download Audio and Lyrics
       env:
-          WORKFLOW_INPUT: ${{ github.event.inputs.props }}
-    - run: cat input-props.json
+          PROPS: ${{ github.event.inputs.props }}
+          YT_COOKIE: ${{ secrets.ytcookie }}
+      run: echo $PROPS > props.json && cat props.json && node downloadAudio
     - name: creating thumbnail
-      run: npx remotion still MusicThumbnail out/lyrics.png --props=./input-props.json --scale=0.5
+      run: npx remotion still MusicThumbnail out/lyrics.png --props=./props.json --scale=0.5
     - name: rendering...
-      run: npx remotion render MusicLyrics out/lyrics.mp4 --props=./input-props.json
+      run: npx remotion render MusicLyrics out/lyrics.mp4 --props=./props.json
     - name: Upload Video
       uses: actions/upload-artifact@v4
       with:

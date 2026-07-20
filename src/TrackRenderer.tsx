@@ -301,8 +301,7 @@ export const TrackRenderer: React.FC<{
               textAlign: "center",
               fontFamily: universalFontFamily,
               fontWeight: "bold",
-              color: "white",
-              filter: "drop-shadow(0 0 5px #00b7ff) drop-shadow(0 0 15px #00b7ff)",
+              color: "#00d4ff",
               padding: "0 40px",
               zIndex: 999,
             }}
@@ -332,9 +331,7 @@ export const TrackRenderer: React.FC<{
           fontSize: 45,
           fontWeight: "normal",
           fontStyle: "italic",
-          textShadow:
-            "0 0 2px #ff7300, 0 0 5px #ff7300, 0 0 7px #ff7300, 0 0 10px #ff7300, 0 0 12px #ff7300",
-          color: "white",
+          color: "#ffaa44",
           position: "absolute",
           bottom: isPortrait ? 600 : 200,
           width: "100%",
@@ -365,12 +362,10 @@ export const TrackRenderer: React.FC<{
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
-
           const hue = interpolate(a, [0, 1], [180, 220], {
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
-          const color = `hsl(${hue}, 80%, 60%)`;
 
           return (
             <div
@@ -378,11 +373,8 @@ export const TrackRenderer: React.FC<{
               style={{
                 height: `${height}px`,
                 width: isPortrait ? 3 : 2,
-                background: `linear-gradient(to top, ${color}, rgba(255, 255, 255, 0.8))`,
+                backgroundColor: `hsl(${hue}, 80%, 60%)`,
                 borderRadius: "4px",
-                boxShadow: `0 0 8px rgba(${hue}, 150, 255, 0.6)`,
-                transform: isPortrait ? `scaleY(${interpolate(a, [0, 1], [1, 1.1])})` : undefined,
-                opacity: isPortrait ? interpolate(a, [0, 1], [0.8, 1]) : 1,
               }}
             />
           );

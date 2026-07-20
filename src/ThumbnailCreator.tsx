@@ -2,7 +2,7 @@ import { loadFont } from "@remotion/google-fonts/Montserrat";
 import { loadFont as loadPlayfair } from "@remotion/google-fonts/PlayfairDisplay";
 import { AbsoluteFill, getStaticFiles, Img } from "remotion";
 import { z } from "zod";
-import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
+import { Video } from "@remotion/media";
 import { defaultThumbnailSchema } from "./Root";
 
 const { fontFamily } = loadFont("normal", { weights: ["700"] });
@@ -65,7 +65,7 @@ export default function ThumbnailCreator(
               }}
             />
           ) : (
-            <LoopableOffthreadVideo
+            <Video
               src={bgSrc}
               style={{
                 objectFit: "cover",

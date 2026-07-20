@@ -60,22 +60,19 @@ export const TrackList: React.FC<{
             <div
               key={i}
               style={{
-                background: isCurrent ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.3)",
-                backdropFilter: "blur(12px)",
+                background: isCurrent ? "rgba(0, 183, 255, 0.18)" : "rgba(0,0,0,0.45)",
                 border: isCurrent
-                  ? "1px solid rgba(255,255,255,0.4)"
-                  : "1px solid rgba(255,255,255,0.05)",
+                  ? "1px solid rgba(0, 183, 255, 0.5)"
+                  : "1px solid rgba(255,255,255,0.08)",
                 borderRadius: 20,
                 padding: "16px 24px",
                 color: "white",
                 transform: `scale(${scale})`,
                 opacity,
-                transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 20,
-                boxShadow: isCurrent ? "0 8px 32px rgba(0, 183, 255, 0.2)" : "none",
                 width: "100%",
                 maxWidth: 550,
               }}
@@ -107,11 +104,10 @@ export const TrackList: React.FC<{
               {isCurrent && (
                 <div
                   style={{
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     backgroundColor: "#00b7ff",
                     borderRadius: "50%",
-                    boxShadow: "0 0 10px #00b7ff",
                   }}
                 />
               )}
@@ -152,7 +148,6 @@ export const TrackList: React.FC<{
             backgroundColor: "rgba(255, 255, 255, 0.2)",
             borderRadius: 4,
             position: "relative",
-            boxShadow: "inset 0 1px 3px rgba(0,0,0,0.2)",
           }}
         >
           <div
@@ -173,8 +168,7 @@ export const TrackList: React.FC<{
               height: 20,
               width: 20,
               borderRadius: "50%",
-              backgroundColor: "white",
-              boxShadow: "0 0 10px #00b7ff",
+              backgroundColor: "#00b7ff",
             }}
           />
         </div>

@@ -25,14 +25,15 @@ on:
         required: true
         default: |
           {
-            "musicTitle": "",
-            "translateTo": "none",
-            "syncronizeLyrics": [],
-            "translateSyncronizeLyrics": [],
+            "musicTitle": "Ariana Grande Hits",
             "background": "default",
-            "ytmMusicInfo": "",
-            "ytmThumbnail": "",
-            "searchLyricsIndex": 0
+            "translateTo": "none",
+            "tracks": [
+              {
+                "musicTitle": "supernatural ariana grande",
+                "searchLyricsIndex": 0
+              }
+            ]
           }
 jobs:
   mempersiapkan-data-yang-diperlukan:
