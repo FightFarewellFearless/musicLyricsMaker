@@ -1,5 +1,6 @@
 import { BG } from "bgutils-js";
 import fs from "fs";
+import path from "path";
 import trr from "googletrans";
 import { JSDOM } from "jsdom";
 import { Innertube, UniversalCache } from "youtubei.js";
@@ -87,49 +88,20 @@ const innertube = await Innertube.create({
   client_type: "WEB_CREATOR",
 });
 
-export async function downloadMusicFile(title) {
-  console.log("Searching for music:", title);
-  const video = await innertube.music.search(title, {
-    type: "song",
-  });
+export async function downloadMusicFile() {
+  console.log("Clearing old data in ./public...");
+  const publicDir = "./public";
+  if (fs.existsSync(publicDir)) {
+    fs.readdirSync(publicDir).forEach((file) => {
+      if (file !== "PLACEHOLDER") {
+        fs.unlinkSync(path.join(publicDir, file));
+      }
+    });
+  } else {
+    fs.mkdirSync(publicDir);
+  }
 
-  const musicurl = await (
-    await innertube.music.getInfo(video.songs.contents[0].id)
-  ).streaming_data.formats[0].decipher(innertube.session.player);
-
-  console.log("Downloading music file...");
-  const download = await fetch(musicurl)
-    .then((a) => a.arrayBuffer())
-    .then((a) => Buffer.from(a));
-  fs.writeFileSync("./public/music.mp4", download);
-
-  console.log("Converting music file to MP3...");
-  execSync("ffmpeg -y -i ./public/music.mp4 ./public/music.mp3");
-
-  console.log("Deleting temporary MP4 file...");
-  fs.unlinkSync("./public/music.mp4");
-
-  console.log("Processing search results...");
-  const ytmSearchResult = video.songs.contents.map((song) => ({
-    id: song.id,
-    title: song.title,
-    artists: song.artists.map((a) => a.name),
-    thumbnail: song.thumbnails[0].url,
-    duration: song.duration?.seconds,
-  }));
-  console.log("Search results:", ytmSearchResult);
-  fs.writeFileSync("./public/search.json", JSON.stringify(ytmSearchResult));
-
-  console.log("Fetching music thumbnail...");
-  fetch(video.songs.contents[0].thumbnails[0].url)
-    .then(async (a) => ({
-      buffer: Buffer.from(await a.arrayBuffer()),
-      fileExtension: a.headers.get("content-type").split("/")[1].split(";")[0],
-    }))
-    .then((a) =>
-      fs.writeFileSync("./public/ytThumb." + a.fileExtension, a.buffer),
-    );
-
+  console.log("Fetching background...");
   if (props.background === "default" && typeof props.background === "string") {
     console.log("Fetching default background...");
     props.background = await fetch(
@@ -148,88 +120,145 @@ export async function downloadMusicFile(title) {
       );
   }
 
-  console.log("Fetching background...");
-  fetch(props.background?.video ?? props.background)
+  const bgExt = await fetch(props.background?.video ?? props.background)
     .then(async (a) => ({
       buffer: Buffer.from(await a.arrayBuffer()),
       fileExtension: a.headers.get("content-type").split("/")[1].split(";")[0],
     }))
-    .then((a) =>
-      fs.writeFileSync("./public/background." + a.fileExtension, a.buffer),
-    );
+    .then((a) => {
+      fs.writeFileSync("./public/background." + a.fileExtension, a.buffer);
+      return a.fileExtension;
+    });
 
-  console.log("Synchronizing lyrics...");
-  let syncronizeLyrics = [];
+  const tracksData = [];
+  
+  if (!props.tracks || props.tracks.length === 0) {
+    console.log("No tracks found in props.json");
+    return;
+  }
 
-  const data = await fetch(
-    "https://lrclib.net/api/search?q=" +
-      encodeURIComponent(
-        ytmSearchResult[0].title + " " + ytmSearchResult[0].artists.join(" "),
-      ),
-  )
-    .then((res) => res.json())
-    .then((x) =>
-      x
-        .filter((a) => a.syncedLyrics !== null)
-        .filter((a) => Math.abs(a.duration - ytmSearchResult[0].duration) <= 2)
-        // @ts-ignore
-        .toSorted(
-          (a, b) =>
-            Math.abs(a.duration - ytmSearchResult[0].duration) -
-            Math.abs(b.duration - ytmSearchResult[0].duration),
-        ),
-    );
-  console.log("Lyrics search result:", data);
+  for (let i = 0; i < props.tracks.length; i++) {
+    const trackProps = props.tracks[i];
+    const title = trackProps.musicTitle;
+    console.log(`\n--- Processing Track ${i}: ${title} ---`);
 
-  const searchData = data[props.searchLyricsIndex];
-  console.log("Selected lyrics data:", searchData);
-  fs.writeFileSync("./public/searchData.json", JSON.stringify(searchData));
+    const video = await innertube.music.search(title, {
+      type: "song",
+    });
 
-  const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n");
-  syncronizeLyricsRaw.forEach((a) => {
-    try {
-      const start = a.split("[")[1].split("]")[0];
-      const text = a.split("]")[1];
-      const [minutes, seconds] = start.split(":");
-      const startDuration = Number(minutes) * 60 + Number(seconds);
-      if (startDuration === 0 && text.trim() === "") return;
-      syncronizeLyrics.push({
-        start: startDuration,
-        text,
+    if (!video.songs || video.songs.contents.length === 0) {
+      console.log(`No song found for ${title}`);
+      continue;
+    }
+
+    const musicurl = await (
+      await innertube.music.getInfo(video.songs.contents[0].id)
+    ).streaming_data.formats[0].decipher(innertube.session.player);
+
+    console.log("Downloading music file...");
+    const download = await fetch(musicurl)
+      .then((a) => a.arrayBuffer())
+      .then((a) => Buffer.from(a));
+    fs.writeFileSync(`./public/music_${i}.mp4`, download);
+
+    console.log("Converting music file to MP3...");
+    execSync(`ffmpeg -y -i ./public/music_${i}.mp4 ./public/music_${i}.mp3`);
+    fs.unlinkSync(`./public/music_${i}.mp4`);
+
+    const ytmSearchResult = video.songs.contents.map((song) => ({
+      id: song.id,
+      title: song.title,
+      artists: song.artists.map((a) => a.name),
+      thumbnail: song.thumbnails[0].url,
+      duration: song.duration?.seconds,
+    }));
+
+    console.log("Fetching music thumbnail...");
+    const thumbExt = await fetch(video.songs.contents[0].thumbnails[0].url)
+      .then(async (a) => {
+        const ext = a.headers.get("content-type").split("/")[1].split(";")[0];
+        fs.writeFileSync(`./public/ytThumb_${i}.${ext}`, Buffer.from(await a.arrayBuffer()));
+        return ext;
       });
-    } catch {}
-  });
 
-  console.log("Translating lyrics...");
-  const translate = await tr(searchData.syncedLyrics);
-  console.log("Translation result:", translate);
+    console.log("Synchronizing lyrics...");
+    let syncronizeLyrics = [];
 
-  // @ts-ignore
-  const shouldRomanize = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3];
-  console.log("Should romanize:", shouldRomanize);
+    const data = await fetch(
+      "https://lrclib.net/api/search?q=" +
+        encodeURIComponent(
+          ytmSearchResult[0].title + " " + ytmSearchResult[0].artists.join(" "),
+        ),
+    )
+      .then((res) => res.json())
+      .then((x) =>
+        x
+          .filter((a) => a.syncedLyrics !== null)
+          .filter((a) => Math.abs(a.duration - ytmSearchResult[0].duration) <= 2)
+          // @ts-ignore
+          .toSorted(
+            (a, b) =>
+              Math.abs(a.duration - ytmSearchResult[0].duration) -
+              Math.abs(b.duration - ytmSearchResult[0].duration),
+          ),
+      );
 
-  if (props.translateTo !== "none") {
-    console.log("Translating synchronized lyrics...");
-    fs.writeFileSync(
-      "./public/translateSyncronizeLyrics.json",
-      JSON.stringify(await translateLyric(syncronizeLyrics, props.translateTo)),
-    );
-  } else {
-    console.log("No translation needed.");
-    fs.writeFileSync("./public/translateSyncronizeLyrics.json", "[]");
+    const searchData = data[trackProps.searchLyricsIndex || 0];
+
+    if (searchData && searchData.syncedLyrics) {
+      const syncronizeLyricsRaw = searchData.syncedLyrics.split("\n");
+      syncronizeLyricsRaw.forEach((a) => {
+        try {
+          const start = a.split("[")[1].split("]")[0];
+          const text = a.split("]")[1];
+          const [minutes, seconds] = start.split(":");
+          const startDuration = Number(minutes) * 60 + Number(seconds);
+          if (startDuration === 0 && text.trim() === "") return;
+          syncronizeLyrics.push({
+            start: startDuration,
+            text,
+          });
+        } catch {}
+      });
+
+      console.log("Translating lyrics...");
+      const translate = await tr(searchData.syncedLyrics);
+      
+      // @ts-ignore
+      const shouldRomanize = !!translate.raw[0]?.[translate.raw[0].length - 1]?.[3];
+
+      let translateSyncronizeLyrics = [];
+      if (props.translateTo !== "none") {
+        translateSyncronizeLyrics = await translateLyric(syncronizeLyrics, props.translateTo);
+      }
+
+      if (shouldRomanize) {
+        syncronizeLyrics = await romanize(syncronizeLyrics);
+      }
+
+      tracksData.push({
+        ytmMusicInfo: `${searchData.trackName} - ${searchData.artistName}`,
+        ytmThumbnailExt: thumbExt,
+        duration: searchData.duration,
+        syncronizeLyrics: [{ start: 0, text: `[${searchData.trackName} - ${searchData.artistName}]` }, ...syncronizeLyrics],
+        translateSyncronizeLyrics,
+        musicTitle: trackProps.musicTitle
+      });
+    } else {
+      tracksData.push({
+        ytmMusicInfo: `${ytmSearchResult[0].title} - ${ytmSearchResult[0].artists.join(", ")}`,
+        ytmThumbnailExt: thumbExt,
+        duration: ytmSearchResult[0].duration,
+        syncronizeLyrics: [{ start: 0, text: `[${ytmSearchResult[0].title} - ${ytmSearchResult[0].artists.join(", ")}]` }],
+        translateSyncronizeLyrics: [],
+        musicTitle: trackProps.musicTitle
+      });
+    }
   }
 
-  if (shouldRomanize) {
-    console.log("Romanizing lyrics...");
-    syncronizeLyrics = await romanize(syncronizeLyrics);
-  }
-
-  console.log("Writing synchronized lyrics to file...");
-  fs.writeFileSync(
-    "./public/syncronizeLyrics.json",
-    JSON.stringify(syncronizeLyrics),
-  );
+  console.log("Writing unified tracksData.json...");
+  fs.writeFileSync("./public/tracksData.json", JSON.stringify(tracksData, null, 2));
 }
 
 console.log("Starting downloadMusicFile...");
-downloadMusicFile(props.musicTitle);
+downloadMusicFile();

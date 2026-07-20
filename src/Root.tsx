@@ -1,56 +1,55 @@
-import { CalculateMetadataFunction, Composition, getStaticFiles, staticFile, Still } from "remotion";
-import tr from 'googletrans';
+import { CalculateMetadataFunction, Composition, staticFile, Still } from "remotion";
 import Music from "./Music";
 import MusicPortrait from "./MusicPortrait";
 import fetch from "cross-fetch";
 import { z } from "zod";
 import ThumbnailCreator from "./ThumbnailCreator";
-import { checkRomanizationIsNeeded, romanize, translateLyric } from "./googletranslate";
+import appProps from "../props.json";
 
 // Each <Composition> is an entry in the sidebar!
-export type DefaultProps = {
+export type TrackProps = {
   musicTitle: string;
-  syncronizeLyrics: {
-    start: number;
-    text: string;
-  }[];
-  translateSyncronizeLyrics: {
-    start: number;
-    text: string;
-  }[];
+  searchLyricsIndex: number;
+};
+
+export type DefaultProps = {
+  musicTitle?: string;
   background: {
     video: string
   } | string;
-  ytmMusicInfo: string;
-  ytmThumbnail: string;
-  searchLyricsIndex: number;
   translateTo: string | "none";
+  tracks: TrackProps[];
+  tracksData?: {
+    ytmMusicInfo: string;
+    ytmThumbnailExt: string;
+    duration: number;
+    syncronizeLyrics: { start: number; text: string }[];
+    translateSyncronizeLyrics: { start: number; text: string }[];
+    musicTitle: string;
+    startFrame: number;
+    durationInFrames: number;
+  }[];
 }
+
 export const DefaultSchema = z.object({
-  musicTitle: z.string(),
-  syncronizeLyrics: z.array(z.object({
-    start: z.number(),
-    text: z.string(),
-  })),
-  translateSyncronizeLyrics: z.array(z.object({
-    start: z.number(),
-    text: z.string(),
-  })),
+  musicTitle: z.string().optional(),
   background: z.union([z.string(), z.object({ video: z.string() })]),
-  ytmMusicInfo: z.string(),
-  ytmThumbnail: z.string(),
-  searchLyricsIndex: z.number().default(0),
   translateTo: z.string(),
+  tracks: z.array(z.object({
+    musicTitle: z.string(),
+    searchLyricsIndex: z.number().default(0),
+  })),
+  tracksData: z.any().optional(),
 })
+
 const defaultProps: DefaultProps = {
-  "musicTitle": "Nothing's gonna change my love for you",
-  "syncronizeLyrics": [],
-  "translateSyncronizeLyrics": [],
-  "background": "default",
-  "ytmMusicInfo": "",
-  "ytmThumbnail": "",
-  "searchLyricsIndex": 0,
-  "translateTo": "none"
+  musicTitle: (appProps as any).musicTitle || "Best Hits Compilation",
+  background: appProps.background || "default",
+  translateTo: appProps.translateTo || "none",
+  tracks: appProps.tracks || [{
+    musicTitle: "Nothing's gonna change my love for you",
+    searchLyricsIndex: 0
+  }]
 }
 
 export type DefaultThumbnailProps = {
@@ -58,14 +57,19 @@ export type DefaultThumbnailProps = {
   background: {
     video: string
   } | string;
+  tracksData?: any;
 };
 const defaultThumbnailProps: DefaultThumbnailProps = {
-  musicTitle: "Nothing's gonna change my love for you",
-  background: "default",
+  musicTitle: (appProps as any).musicTitle || "Best Hits Compilation",
+  background: appProps.background || "default",
+  tracksData: Array.from({ length: 20 }).map((_, i) => ({
+    musicTitle: `Awesome Track ${i + 1}`
+  }))
 };
 export const defaultThumbnailSchema = z.object({
   musicTitle: z.string(),
   background: z.union([z.string(), z.object({ video: z.string() })]),
+  tracksData: z.any().optional(),
 })
 
 export const RemotionRoot: React.FC = () => {
@@ -94,6 +98,7 @@ export const RemotionRoot: React.FC = () => {
       <Still
         id="MusicThumbnail"
         component={ThumbnailCreator}
+        calculateMetadata={calculateMetadataThumbnail}
         width={1920}
         height={1080}
         defaultProps={defaultThumbnailProps}
@@ -103,41 +108,56 @@ export const RemotionRoot: React.FC = () => {
   )
 };
 
+const calculateMetadataThumbnail: CalculateMetadataFunction<DefaultThumbnailProps> = async ({
+  props,
+}) => {
+  let tracksDataRaw: any[] = [];
+  try {
+    tracksDataRaw = await fetch(staticFile('tracksData.json')).then(a => a.json());
+  } catch (e) {
+    console.warn("tracksData.json not found in thumbnail.");
+  }
+
+  let { background } = props;
+  if (props.background === 'default' && typeof props.background === 'string') {
+    background = await fetch('https://api.github.com/repos/orangci/walls-catppuccin-mocha/contents')
+      .then(res => res.json()).then(a => a.filter((a: any) => a.type === 'file' && a.name !== 'README.md' && a.name !== 'LICENSE' && a.name !== 'bsod.png')[Math.floor(Math.random() * a.length)].download_url);
+  }
+
+  return {
+    props: {
+      ...props,
+      background,
+      tracksData: tracksDataRaw.length > 0 ? tracksDataRaw : props.tracksData
+    }
+  };
+};
+
 const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
   props,
   defaultProps,
   abortSignal,
 }) => {
-  interface APIRes {
-    id: number;
-    name: string;
-    trackName: string;
-    artistName: string;
-    albumName: string;
-    duration: number;
-    instrumental: boolean;
-    plainLyrics: string;
-    syncedLyrics: string;
+  let tracksDataRaw: any[] = [];
+  try {
+    tracksDataRaw = await fetch(staticFile('tracksData.json')).then(a => a.json());
+  } catch (e) {
+    console.warn("tracksData.json not found, maybe downloadAudio hasn't run yet.");
   }
-  interface YTMSearch {
-    id: string;
-    title: string;
-    artists: string[];
-    thumbnail: string;
-    duration: number;
-  }
-  type SYNCLRC = { start: number; text: string }[];
-  let syncronizeLyrics: SYNCLRC = [];
-  let translateSyncronizeLyrics: SYNCLRC = [];
-  let searchData: APIRes;
-  let ytmSearchResult: YTMSearch;
 
-    searchData = await fetch(staticFile('searchData.json')).then(a => a.json());
-    ytmSearchResult = await fetch(
-      staticFile('search.json')
-    ).then(a => a.json()).then((a: YTMSearch[]) => a[0]);
-    syncronizeLyrics = await fetch(staticFile('syncronizeLyrics.json')).then(a => a.json());
-    translateSyncronizeLyrics = await fetch(staticFile('translateSyncronizeLyrics.json')).then(a => a.json());
+  let totalDurationFrames = 0;
+  const tracksData = tracksDataRaw.map(t => {
+     const durationInFrames = Math.round(t.duration * 30);
+     const trackMeta = {
+       ...t,
+       startFrame: totalDurationFrames,
+       durationInFrames
+     };
+     totalDurationFrames += durationInFrames;
+     return trackMeta;
+  });
+  
+  if (totalDurationFrames === 0) totalDurationFrames = 30 * 10; // default 10 seconds if no data
 
   let { background } = props;
 
@@ -148,15 +168,12 @@ const calculateMetadata: CalculateMetadataFunction<DefaultProps> = async ({
 
   return {
     // Change the metadata
-    durationInFrames: Math.round(searchData.duration * 30),
+    durationInFrames: totalDurationFrames,
     // or transform some props
     props: {
       ...props,
-      syncronizeLyrics: [{ start: 0, text: `[${searchData.trackName} - ${searchData.artistName}]` }, ...syncronizeLyrics],
-      translateSyncronizeLyrics,
       background,
-      ytmThumbnail: ytmSearchResult.thumbnail,
-      ytmMusicInfo: `${searchData.trackName} - ${searchData.artistName}`,
+      tracksData
     },
     // or add per-composition default codec
     defaultCodec: "h264",

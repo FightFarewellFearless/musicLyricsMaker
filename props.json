@@ -1,10 +1,115 @@
 {
-  "musicTitle": "supernatural ariana grande",
-  "translateTo": "none",
-  "syncronizeLyrics": [],
-  "translateSyncronizeLyrics": [],
+  "musicTitle": "Ariana Grande Hits",
   "background": "default",
-  "ytmMusicInfo": "",
-  "ytmThumbnail": "",
-  "searchLyricsIndex": 0
+  "translateTo": "none",
+  "tracks": [
+    {
+      "musicTitle": "thank u next ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "7 rings ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "we cant be friends ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "positions ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "yes and ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "problem ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "bang bang ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "side to side ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "no tears left to cry ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "break free ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "into you ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "love me harder ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "god is a woman ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "one last time ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "dangerous woman ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "34 35 ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "break up with your girlfriend im bored ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "rain on me ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "stuck with u ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "save your tears ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "die for you ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "the boy is mine ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "supernatural ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "the way ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "pov ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "breathin ariana grande",
+      "searchLyricsIndex": 0
+    },
+    {
+      "musicTitle": "hate that i made you love me ariana grande",
+      "searchLyricsIndex": 0
+    }
+  ]
 }

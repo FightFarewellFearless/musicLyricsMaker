@@ -1,376 +1,69 @@
-import { loadFont as loadFontNoto } from "@remotion/google-fonts/NotoSans";
-import { loadFont as loadFontAR } from "@remotion/google-fonts/NotoSansArabic";
-import { loadFont as loadFontJP } from "@remotion/google-fonts/NotoSansJP";
-import { loadFont as loadFontKR } from "@remotion/google-fonts/NotoSansKR";
-import { loadFont as loadFontSC } from "@remotion/google-fonts/NotoSansSC";
-import { useAudioData } from "@remotion/media-utils";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import {
-  AbsoluteFill,
-  Audio,
-  getStaticFiles,
-  Img,
-  interpolate,
-  staticFile,
-  useCurrentFrame,
-  useCurrentScale,
-  useVideoConfig,
-} from "remotion";
-import {
-  Animated,
-  Animation,
-  Ease,
-  Move,
-  Rotate,
-  Scale,
-} from "remotion-animated";
+
 import { z } from "zod";
-import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
-import normalizeAudioData from "./normalizeAudioData";
+import { AbsoluteFill, getStaticFiles, Img, Sequence } from "remotion";
 import { DefaultSchema } from "./Root";
-const { fontFamily: fontBase } = loadFontNoto();
-const { fontFamily: fontJP } = loadFontJP();
-const { fontFamily: fontKR } = loadFontKR();
-const { fontFamily: fontSC } = loadFontSC();
-const { fontFamily: fontArabic } = loadFontAR();
-const universalFontFamily = `${fontBase}, ${fontJP}, ${fontKR}, ${fontSC}, ${fontArabic}, sans-serif`;
+import { LoopableOffthreadVideo } from "./LoopableOffthreadVideo";
+import { TrackRenderer } from "./TrackRenderer";
+import { TrackList } from "./TrackList";
 
 export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
-  const music = staticFile("music.mp3");
-  const frame = useCurrentFrame();
-  const { fps, durationInFrames } = useVideoConfig();
-  const duration = frame / fps;
-
-  const lyricsOnCurrentDuration = props.syncronizeLyrics.filter(
-    (a) => duration >= a.start,
-  );
-  let currentLyrics = lyricsOnCurrentDuration.slice(-1)[0]?.text || "♫";
-  currentLyrics =
-    currentLyrics === "" || currentLyrics === " " ? "♫" : currentLyrics;
-  const previousLyrics = lyricsOnCurrentDuration.slice(-2)[0]?.text || "";
-  const nextLyrics =
-    props.syncronizeLyrics[
-      lyricsOnCurrentDuration.lastIndexOf(
-        lyricsOnCurrentDuration[lyricsOnCurrentDuration.length - 1],
-      ) + 1
-    ]?.text || "";
-
-  const translateLyricsOnCurrentDuration =
-    props.translateSyncronizeLyrics.filter((a) => duration >= a.start);
-  let translateCurrentLyrics =
-    translateLyricsOnCurrentDuration.slice(-1)[0]?.text || "";
-
-  const audioData = useAudioData(music);
-  const ytmMusicInfoRef = useRef<HTMLDivElement>(null);
-  const [ytmMusicInfoWidth, setYtmMusicInfoWidth] = useState(0);
-  const scale = useCurrentScale();
-
-  useLayoutEffect(() => {
-    if (!ytmMusicInfoRef.current) return;
-    setYtmMusicInfoWidth(
-      ytmMusicInfoRef.current.getBoundingClientRect().width / scale,
-    );
-  }, [scale, audioData]);
-
-  const currentLyricsAnimation = useMemo(() => {
-    const animation: Animation[] = [];
-    props.syncronizeLyrics.forEach((a) => {
-      const start = a.start * fps;
-      const duration = fps / 2;
-      animation.push(
-        Move({ y: 0, initialY: 60, start, duration }),
-        Scale({ by: 1, initial: 0.85, start, duration, initialZ: 1 }),
-      );
-    });
-    return animation;
-  }, []);
-
-  const currentTranslateLyricsAnimation = useMemo(() => {
-    const animation: Animation[] = [];
-    props.translateSyncronizeLyrics.forEach((a) => {
-      const start = a.start * fps;
-      const duration = fps / 2;
-      animation.push(Scale({ by: 1, initial: 0.65, start, duration }));
-    });
-    return animation;
-  }, []);
-
-  const currentTimeDuration = `${String(Math.floor(duration / 60)).padStart(
-    2,
-    "0",
-  )}:${String(Math.floor(duration % 60)).padStart(2, "0")}`;
-  const totalDuration = `${String(
-    Math.floor(durationInFrames / fps / 60),
-  ).padStart(2, "0")}:${String(
-    Math.floor((durationInFrames / fps) % 60),
-  ).padStart(2, "0")}`;
-
-  if (!audioData) return null;
-  const visualization = normalizeAudioData({
-    audioData,
-    fps,
-    frame,
-  });
-
   return (
-    <>
-      <Audio src={music} />
+    <AbsoluteFill
+      style={{
+        backgroundColor: "#111",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+      }}
+    >
+      {/* Global Background (portrait fit) */}
+      <AbsoluteFill style={{ opacity: 0.5 }}>
+        {typeof props.background === "string" ? (
+          <Img
+            src={getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""}
+            style={{
+              objectFit: "cover",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        ) : (
+          <LoopableOffthreadVideo
+            muted
+            loop
+            src={getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""}
+            style={{
+              objectFit: "cover",
+              width: "100%",
+              height: "100%",
+            }}
+          />
+        )}
+      </AbsoluteFill>
+
+      {/* Overlay (soft vignette) */}
       <AbsoluteFill
         style={{
-          backgroundColor: "#111",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
+          backdropFilter: "blur(3px)",
+          background:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%)",
         }}
-      >
-        {/* Background (portrait fit) */}
-        <AbsoluteFill style={{ opacity: 0.5 }}>
-          {typeof props.background === "string" ? (
-            <Img
-              src={getStaticFiles().find((a) =>
-                      a.name.startsWith("background"),
-                    )!.src
-              }
-              style={{
-                objectFit: "cover",
-                width: "100%",
-                height: "100%",
-              }}
-            />
-          ) : (
-            <LoopableOffthreadVideo
-              muted
-              loop
-              src={getStaticFiles().find((a) =>
-                      a.name.startsWith("background"),
-                    )!.src
-              }
-              style={{
-                objectFit: "cover",
-                width: "100%",
-                height: "100%",
-              }}
-            />
-          )}
-        </AbsoluteFill>
+      />
 
-        {/* Overlay (soft vignette) */}
-        <AbsoluteFill
-          style={{
-            backdropFilter: "blur(3px)",
-            background:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%)",
-          }}
-        />
+      {/* Track List Overlay */}
+      {props.tracksData && <TrackList tracksData={props.tracksData} isPortrait={true} />}
 
-        {/* Thumbnail & title */}
-        <div
-          style={{
-            position: "absolute",
-            top: 100,
-            width: "100%",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            gap: 20,
-          }}
+      {/* Render each track sequentially */}
+      {props.tracksData?.map((track: any, i: number) => (
+        <Sequence
+          key={i}
+          from={track.startFrame}
+          durationInFrames={track.durationInFrames}
         >
-          <Animated
-            animations={[
-              Rotate({ degrees: 360, duration: fps * 6, ease: Ease.Linear }),
-            ]}
-          >
-            <Img
-              src={getStaticFiles().find((a) => a.name.startsWith("ytThumb"))!
-                      .src
-              }
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: "50%",
-                border: "6px solid white",
-              }}
-            />
-          </Animated>
-          <div
-            ref={ytmMusicInfoRef}
-            style={{
-              color: "white",
-              fontSize: 36,
-              fontWeight: "bold",
-              fontFamily: universalFontFamily,
-              opacity: 0.9,
-              width: "80%",
-              lineHeight: 1.3,
-            }}
-          >
-            {props.ytmMusicInfo}
-          </div>
-        </div>
-
-        {/* Lyrics Section */}
-        <div
-          style={{
-            bottom: 420,
-            width: "100%",
-            textAlign: "center",
-            zIndex: 1,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 30,
-              color: "#ffffffaa",
-              marginBottom: 10,
-              fontFamily: universalFontFamily,
-            }}
-          >
-            {previousLyrics}
-          </div>
-
-          <Animated animations={currentLyricsAnimation}>
-            <div
-              style={{
-                fontSize: 60,
-                color: "white",
-                fontWeight: "bold",
-                fontFamily: universalFontFamily,
-                filter:
-                  "drop-shadow(0 0 5px #00b7ff) drop-shadow(0 0 15px #00b7ff)",
-                marginLeft: 40,
-                marginRight: 40,
-              }}
-            >
-              {currentLyrics}
-            </div>
-          </Animated>
-
-          <div
-            style={{
-              fontSize: 35,
-              color: "#ffffffaa",
-              marginTop: 10,
-              fontFamily: universalFontFamily,
-            }}
-          >
-            {nextLyrics}
-          </div>
-        </div>
-
-        {/* Translation */}
-        <Animated
-          animations={currentTranslateLyricsAnimation}
-          style={{
-            position: "absolute",
-            bottom: 300,
-            width: "100%",
-            textAlign: "center",
-            fontSize: 45,
-            fontStyle: "italic",
-            textShadow: "0 0 3px #ff7300, 0 0 6px #ff7300, 0 0 10px #ff7300",
-            color: "white",
-            fontFamily: universalFontFamily,
-          }}
-        >
-          {translateCurrentLyrics}
-        </Animated>
-
-        {/* Audio Visualizer */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 120,
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "flex-end",
-            gap: 2,
-            height: 100,
-          }}
-        >
-          {visualization.map((a, i) => {
-            const height = interpolate(a, [0, 1], [5, 65], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-
-            const hue = interpolate(a, [0, 1], [180, 220], {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-            });
-            const color = `hsl(${hue}, 80%, 60%)`;
-
-            return (
-              <div
-                key={i}
-                style={{
-                  height: `${height}px`,
-                  width: 3,
-                  background: `linear-gradient(to top, ${color}, rgba(255, 255, 255, 0.8))`,
-                  borderRadius: "4px",
-                  boxShadow: `0 0 8px rgba(${hue}, 150, 255, 0.6)`,
-                  transform: `scaleY(${interpolate(a, [0, 1], [1, 1.1])})`,
-                  opacity: interpolate(a, [0, 1], [0.8, 1]),
-                }}
-              />
-            );
-          })}
-        </div>
-
-        {/* Progress Bar */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 60,
-            width: "80%",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: "bold",
-              opacity: 0.8,
-              color: "white",
-            }}
-          >
-            {currentTimeDuration}
-          </div>
-          <div
-            style={{
-              flex: 1,
-              height: 8,
-              backgroundColor: "rgba(255,255,255,0.2)",
-              borderRadius: 4,
-              position: "relative",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${(frame / durationInFrames) * 100}%`,
-                backgroundColor: "#00b7ff",
-                borderRadius: 4,
-                position: "absolute",
-              }}
-            />
-          </div>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: "bold",
-              opacity: 0.8,
-              color: "white",
-            }}
-          >
-            {totalDuration}
-          </div>
-        </div>
-      </AbsoluteFill>
-    </>
+          <TrackRenderer track={track} trackIndex={i} isPortrait={true} />
+        </Sequence>
+      ))}
+    </AbsoluteFill>
   );
 }

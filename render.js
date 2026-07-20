@@ -2,38 +2,16 @@
 import { bundle } from '@remotion/bundler';
 import { renderMedia, renderStill, selectComposition } from '@remotion/renderer';
 import path from 'path';
+import fs from 'fs';
+
 console.log('Memulai rendering...');
-const inputProps = {
-  "musicTitle": "Everything goes on - Porter Robinson",
-  "syncronizeLyrics": [],
-  "background": {
-    "video": "https://static.moewalls.com/videos/preview/2022/star-guardian-akali-and-kaisa-league-of-legends-preview.mp4"
-  },
-  "ytmMusicInfo": "",
-  "ytmThumbnail": "",
-  "searchLyricsIndex": 0
-};
+const inputProps = JSON.parse(fs.readFileSync('./props.json', 'utf8'));
 const compositionId = 'MusicLyrics';
 
 if (inputProps.background === 'default') {
   inputProps.background = await fetch('https://sebelasempat.hitam.id/api/randomWallpaper').then(a => a.json()).then(a => a.background);
   console.log(inputProps.background);
 };
-
-// await downloadMusicFile(inputProps.musicTitle);
-
-// const backgroundQueries = ['lifestyle', 'sky', 'stars'];
-// const backgroundQuery = backgroundQueries[Math.floor(Math.random() * backgroundQueries.length)];
-
-// const background = await fetch('https://api.ryzendesu.vip/api/search/wallpaper-moe?query=' + backgroundQuery, {
-//   headers: {
-//     "Accept": 'application/json',
-//     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
-//   }
-// })
-//   .then(res => res.json()).then(data => data.result[Math.floor(Math.random() * data.result.length)].wallpaper);
-// console.log(background);
-// inputProps.background = background;
 
 console.log('Bundle...');
 
@@ -51,27 +29,34 @@ const composition = await selectComposition({
   inputProps,
 });
 
+const firstTrackTitle = inputProps.tracks?.[0]?.musicTitle || 'Compilation';
+const thumbnailProps = {
+  musicTitle: inputProps.musicTitle || `Best Songs Compilation`,
+  background: inputProps.background,
+  tracksData: inputProps.tracks
+};
+
 await renderStill({
   composition: await selectComposition({
     serveUrl: bundleLocation,
     id: 'MusicThumbnail',
-    inputProps,
+    inputProps: thumbnailProps,
   }),
   serveUrl: bundleLocation,
-  output: `out/MusicThumbnail - ${inputProps.musicTitle}.png`,
-  inputProps,
+  output: `out/MusicThumbnail - Compilation.png`,
+  inputProps: thumbnailProps,
   scale: 1 / 2,
 });
 
 console.log('Thumbnail dibuat!');
-console.log('Merender...', inputProps.musicTitle);
+console.log('Merender...', firstTrackTitle);
 console.time('Waktu render');
 console.log('\n\n\n\n');
 await renderMedia({
   composition,
   serveUrl: bundleLocation,
   codec: 'h264',
-  outputLocation: `out/${compositionId} - ${inputProps.musicTitle}.mp4`,
+  outputLocation: `out/${compositionId} - Compilation.mp4`,
   inputProps,
   onProgress: (p) => {
     process.stdout.moveCursor(0, -3);
@@ -82,11 +67,6 @@ await renderMedia({
     process.stdout.write(`Frame di encode / Frame di render: ${p.encodedFrames} / ${p.renderedFrames}\n`);
     process.stdout.write(`Progress: ${(p.progress * 100).toFixed(2)}%`);
   },
-  concurrency: 2,
-  // chromiumOptions: {
-  //   enableMultiProcessOnLinux: true,
-  // },
-  // scale: 2/3, 
 });
 console.log();
 console.timeEnd('Waktu render');

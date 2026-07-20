@@ -25,7 +25,7 @@ export default function getResponsiveTrebleData({
       frame: targetFrame,
       audioData,
       numberOfSamples: fftSize,
-      optimizeFor: "accuracy",
+      optimizeFor: "speed",
       smoothing: true, 
     });
 
