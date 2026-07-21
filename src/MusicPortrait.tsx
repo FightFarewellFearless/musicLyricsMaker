@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { AbsoluteFill, getStaticFiles, Img, Sequence } from "remotion";
 import { DefaultSchema } from "./Root";
@@ -21,7 +20,10 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
       <AbsoluteFill style={{ opacity: 0.5 }}>
         {typeof props.background === "string" ? (
           <Img
-            src={getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""}
+            src={
+              getStaticFiles().find((a) => a.name.startsWith("background"))
+                ?.src || ""
+            }
             style={{
               objectFit: "cover",
               width: "100%",
@@ -32,7 +34,10 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
           <Video
             muted
             loop
-            src={getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""}
+            src={
+              getStaticFiles().find((a) => a.name.startsWith("background"))
+                ?.src || ""
+            }
             style={{
               objectFit: "cover",
               width: "100%",
@@ -42,15 +47,18 @@ export default function MusicPortrait(props: z.infer<typeof DefaultSchema>) {
         )}
       </AbsoluteFill>
 
-      {/* Dark overlay to improve text legibility */}
       <AbsoluteFill
         style={{
-          background: "rgba(0,0,0,0.45)",
+          backdropFilter: "blur(3px)",
+          background:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.7) 100%)",
         }}
       />
 
       {/* Track List Overlay */}
-      {props.tracksData && <TrackList tracksData={props.tracksData} isPortrait={true} />}
+      {props.tracksData && (
+        <TrackList tracksData={props.tracksData} isPortrait={true} />
+      )}
 
       {/* Render each track sequentially */}
       {props.tracksData?.map((track: any, i: number) => (

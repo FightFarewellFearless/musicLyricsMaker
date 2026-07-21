@@ -8,15 +8,9 @@ import {
   staticFile,
   useCurrentFrame,
   useCurrentScale,
-  useVideoConfig
+  useVideoConfig,
 } from "remotion";
-import {
-  Animated,
-  Ease,
-  Move,
-  Rotate,
-  Scale,
-} from "remotion-animated";
+import { Animated, Ease, Move, Rotate, Scale } from "remotion-animated";
 import normalizeAudioData from "./normalizeAudioData";
 
 import { loadFont as loadFontNoto } from "@remotion/google-fonts/NotoSans";
@@ -24,11 +18,26 @@ import { loadFont as loadFontAR } from "@remotion/google-fonts/NotoSansArabic";
 import { loadFont as loadFontJP } from "@remotion/google-fonts/NotoSansJP";
 import { loadFont as loadFontKR } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadFontSC } from "@remotion/google-fonts/NotoSansSC";
-const { fontFamily: fontBase } = loadFontNoto("normal", { weights: ["400", "700"], ignoreTooManyRequestsWarning: true });
-const { fontFamily: fontJP } = loadFontJP("normal", { weights: ["400", "700"], ignoreTooManyRequestsWarning: true });
-const { fontFamily: fontKR } = loadFontKR("normal", { weights: ["400", "700"], ignoreTooManyRequestsWarning: true });
-const { fontFamily: fontSC } = loadFontSC("normal", { weights: ["400", "700"], ignoreTooManyRequestsWarning: true });
-const { fontFamily: fontArabic } = loadFontAR("normal", { weights: ["400", "700"], ignoreTooManyRequestsWarning: true });
+const { fontFamily: fontBase } = loadFontNoto("normal", {
+  weights: ["400", "700"],
+  ignoreTooManyRequestsWarning: true,
+});
+const { fontFamily: fontJP } = loadFontJP("normal", {
+  weights: ["400", "700"],
+  ignoreTooManyRequestsWarning: true,
+});
+const { fontFamily: fontKR } = loadFontKR("normal", {
+  weights: ["400", "700"],
+  ignoreTooManyRequestsWarning: true,
+});
+const { fontFamily: fontSC } = loadFontSC("normal", {
+  weights: ["400", "700"],
+  ignoreTooManyRequestsWarning: true,
+});
+const { fontFamily: fontArabic } = loadFontAR("normal", {
+  weights: ["400", "700"],
+  ignoreTooManyRequestsWarning: true,
+});
 const universalFontFamily = `${fontBase}, ${fontJP}, ${fontKR}, ${fontSC}, ${fontArabic}, sans-serif`;
 
 export const TrackRenderer: React.FC<{
@@ -49,10 +58,15 @@ export const TrackRenderer: React.FC<{
     }
   }
 
-  let currentLyrics = currentIndex >= 0 ? track.syncronizeLyrics[currentIndex].text : "♫";
+  let currentLyrics =
+    currentIndex >= 0 ? track.syncronizeLyrics[currentIndex].text : "♫";
   currentLyrics = currentLyrics.trim() === "" ? "♫" : currentLyrics;
-  const previousLyrics = currentIndex > 0 ? track.syncronizeLyrics[currentIndex - 1].text : "";
-  const nextLyrics = currentIndex >= 0 && currentIndex < track.syncronizeLyrics.length - 1 ? track.syncronizeLyrics[currentIndex + 1].text : "";
+  const previousLyrics =
+    currentIndex > 0 ? track.syncronizeLyrics[currentIndex - 1].text : "";
+  const nextLyrics =
+    currentIndex >= 0 && currentIndex < track.syncronizeLyrics.length - 1
+      ? track.syncronizeLyrics[currentIndex + 1].text
+      : "";
 
   let currentTranslateIndex = -1;
   if (track.translateSyncronizeLyrics) {
@@ -63,13 +77,16 @@ export const TrackRenderer: React.FC<{
       }
     }
   }
-  const translateCurrentLyrics = currentTranslateIndex >= 0 ? track.translateSyncronizeLyrics[currentTranslateIndex].text : "";
+  const translateCurrentLyrics =
+    currentTranslateIndex >= 0
+      ? track.translateSyncronizeLyrics[currentTranslateIndex].text
+      : "";
 
   const thumbSrc = useMemo(() => {
     const files = getStaticFiles();
     return (
       files.find(
-        (a) => a.name === `ytThumb_${trackIndex}.${track.ytmThumbnailExt}`
+        (a) => a.name === `ytThumb_${trackIndex}.${track.ytmThumbnailExt}`,
       )?.src ||
       files.find((a) => a.name.startsWith(`ytThumb_${trackIndex}`))?.src ||
       ""
@@ -101,11 +118,10 @@ export const TrackRenderer: React.FC<{
 
   const currentTranslateLyricsAnimation = useMemo(() => {
     if (currentTranslateIndex < 0) return [];
-    const start = track.translateSyncronizeLyrics[currentTranslateIndex].start * fps;
+    const start =
+      track.translateSyncronizeLyrics[currentTranslateIndex].start * fps;
     const duration = fps / 2;
-    return [
-      Scale({ by: 1, initial: 0.65, start, duration, initialZ: 1 }),
-    ];
+    return [Scale({ by: 1, initial: 0.65, start, duration, initialZ: 1 })];
   }, [currentTranslateIndex, track.translateSyncronizeLyrics, fps]);
 
   if (!audioData) return null;
@@ -118,7 +134,7 @@ export const TrackRenderer: React.FC<{
   return (
     <>
       <Audio src={music} />
-      
+
       {/* Thumbnail and Title */}
       {isPortrait ? (
         <div
@@ -301,7 +317,9 @@ export const TrackRenderer: React.FC<{
               textAlign: "center",
               fontFamily: universalFontFamily,
               fontWeight: "bold",
-              color: "#00d4ff",
+              color: "white",
+              filter:
+                "drop-shadow(0 0 5px #00b7ff) drop-shadow(0 0 15px #00b7ff)",
               padding: "0 40px",
               zIndex: 999,
             }}
@@ -331,7 +349,10 @@ export const TrackRenderer: React.FC<{
           fontSize: 45,
           fontWeight: "normal",
           fontStyle: "italic",
-          color: "#ffaa44",
+          textShadow:
+            "0 0 2px #ff7300, 0 0 5px #ff7300, 0 0 7px #ff7300, 0 0 10px #ff7300, 0 0 12px #ff7300",
+          color: "white",
+
           position: "absolute",
           bottom: isPortrait ? 600 : 200,
           width: "100%",
@@ -366,6 +387,7 @@ export const TrackRenderer: React.FC<{
             extrapolateLeft: "clamp",
             extrapolateRight: "clamp",
           });
+          const color = `hsl(${hue}, 80%, 60%)`;
 
           return (
             <div
@@ -373,8 +395,13 @@ export const TrackRenderer: React.FC<{
               style={{
                 height: `${height}px`,
                 width: isPortrait ? 3 : 2,
-                backgroundColor: `hsl(${hue}, 80%, 60%)`,
+                background: `linear-gradient(to top, ${color}, rgba(255, 255, 255, 0.8))`,
                 borderRadius: "4px",
+                boxShadow: `0 0 8px rgba(${hue}, 150, 255, 0.6)`,
+                transform: isPortrait
+                  ? `scaleY(${interpolate(a, [0, 1], [1, 1.1])})`
+                  : undefined,
+                opacity: isPortrait ? interpolate(a, [0, 1], [0.8, 1]) : 1,
               }}
             />
           );

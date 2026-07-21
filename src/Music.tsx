@@ -1,4 +1,3 @@
-
 import { z } from "zod";
 import { AbsoluteFill, getStaticFiles, Img, Sequence } from "remotion";
 import { DefaultSchema } from "./Root";
@@ -20,7 +19,8 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
         {typeof props.background === "string" ? (
           <Img
             src={
-              getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""
+              getStaticFiles().find((a) => a.name.startsWith("background"))
+                ?.src || ""
             }
             style={{ objectFit: "cover", width: "100%", height: "100%" }}
           />
@@ -29,16 +29,18 @@ export default function Music(props: z.infer<typeof DefaultSchema>) {
             muted
             loop
             src={
-              getStaticFiles().find((a) => a.name.startsWith("background"))?.src || ""
+              getStaticFiles().find((a) => a.name.startsWith("background"))
+                ?.src || ""
             }
             style={{ objectFit: "cover", width: "100%", height: "100%" }}
           />
         )}
       </AbsoluteFill>
-      {/* Dark overlay to improve text legibility */}
       <AbsoluteFill
         style={{
-          background: "rgba(0,0,0,0.35)",
+          backdropFilter: "blur(3px)",
+          background:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%)",
         }}
       />
       {/* Track List Overlay */}
