@@ -22,9 +22,25 @@ export const TrackList: React.FC<{
     }
   }
 
+  // Helper to format time as HH:MM:SS or MM:SS
+  const formatTime = (totalSeconds: number, forceHours: boolean = false) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = Math.floor(totalSeconds % 60);
+    
+    if (h > 0 || forceHours) {
+      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  };
+
+  const totalSeconds = durationInFrames / fps;
+  const currentSeconds = frame / fps;
+  const showHours = totalSeconds >= 3600;
+
   // Calculate overall progress
-  const currentTimeDuration = `${String(Math.floor(frame / fps / 60)).padStart(2, "0")}:${String(Math.floor((frame / fps) % 60)).padStart(2, "0")}`;
-  const totalDuration = `${String(Math.floor(durationInFrames / fps / 60)).padStart(2, "0")}:${String(Math.floor((durationInFrames / fps) % 60)).padStart(2, "0")}`;
+  const currentTimeDuration = formatTime(currentSeconds, showHours);
+  const totalDuration = formatTime(totalSeconds, showHours);
 
   return (
     <>
@@ -56,7 +72,7 @@ export const TrackList: React.FC<{
           const scale = isCurrent ? 1 : 0.9;
 
           const startSeconds = track.startFrame / fps;
-          const timestamp = `[${String(Math.floor(startSeconds / 60)).padStart(2, "0")}:${String(Math.floor(startSeconds % 60)).padStart(2, "0")}]`;
+          const timestamp = `[${formatTime(startSeconds, showHours)}]`;
 
           return (
             <div
