@@ -1,5 +1,6 @@
 import React from "react";
-import { useCurrentFrame, useVideoConfig } from "remotion";
+import { interpolate, useCurrentFrame, useVideoConfig } from "remotion";
+import { Animated, Ease, Fade, Move, Scale } from "remotion-animated";
 
 export const TrackList: React.FC<{
   tracksData: any[];
@@ -27,7 +28,7 @@ export const TrackList: React.FC<{
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = Math.floor(totalSeconds % 60);
-    
+
     if (h > 0 || forceHours) {
       return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     }
@@ -41,6 +42,8 @@ export const TrackList: React.FC<{
   // Calculate overall progress
   const currentTimeDuration = formatTime(currentSeconds, showHours);
   const totalDuration = formatTime(totalSeconds, showHours);
+
+  const transDuration = Math.max(1, Math.round(fps * 0.4));
 
   return (
     <>
@@ -60,85 +63,244 @@ export const TrackList: React.FC<{
         }}
       >
         {tracksData.map((track, i) => {
-          const isCurrent = i === currentIndex;
           const diff = i - currentIndex;
 
           // Only show 1 previous and 2 next tracks to prevent clutter
           if (diff < -1 || diff > 2) return null;
 
-          const opacity = isCurrent
-            ? 1
-            : Math.max(0, 0.8 - Math.abs(diff) * 0.3);
-          const scale = isCurrent ? 1 : 0.9;
+          const startFrame = track.startFrame;
+          const nextTrackStart = tracksData[i + 1]?.startFrame;
+          const prevTrackStart = tracksData[i - 1]?.startFrame;
+          const next2TrackStart = tracksData[i + 2]?.startFrame;
+
+          // Build remotion-animated animations array for track item `i`
+          const trackAnimations = [];
+
+          if (i === 0) {
+            // Track 0 starts active
+            trackAnimations.push(
+              Scale({ start: 0, duration: 1, initial: 1.0, by: 1.0 }),
+              Fade({ start: 0, duration: 1, initial: 1.0, to: 1.0 }),
+            );
+            if (nextTrackStart !== undefined) {
+              trackAnimations.push(
+                Scale({
+                  start: nextTrackStart,
+                  duration: transDuration,
+                  initial: 1.0,
+                  by: 0.9,
+                  ease: Ease.QuadraticOut,
+                }),
+                Fade({
+                  start: nextTrackStart,
+                  duration: transDuration,
+                  initial: 1.0,
+                  to: 0.5,
+                  ease: Ease.QuadraticOut,
+                }),
+              );
+            }
+            if (next2TrackStart !== undefined) {
+              trackAnimations.push(
+                Fade({
+                  start: next2TrackStart,
+                  duration: transDuration,
+                  initial: 0.5,
+                  to: 0.0,
+                  ease: Ease.QuadraticOut,
+                }),
+              );
+            }
+          } else {
+            // Track i > 0 starts as upcoming
+            trackAnimations.push(
+              Scale({ start: 0, duration: 1, initial: 0.9, by: 0.9 }),
+              Fade({ start: 0, duration: 1, initial: 0.2, to: 0.5 }),
+            );
+            if (prevTrackStart !== undefined) {
+              trackAnimations.push(
+                Fade({
+                  start: prevTrackStart,
+                  duration: transDuration,
+                  initial: 0.2,
+                  to: 0.5,
+                  ease: Ease.QuadraticOut,
+                }),
+              );
+            }
+            trackAnimations.push(
+              Scale({
+                start: startFrame,
+                duration: transDuration,
+                initial: 0.9,
+                by: 1.111111,
+                ease: Ease.QuadraticOut,
+              }),
+              Fade({
+                start: startFrame,
+                duration: transDuration,
+                initial: 0.5,
+                to: 1.0,
+                ease: Ease.QuadraticOut,
+              }),
+              Move({
+                start: startFrame,
+                duration: transDuration,
+                initialY: 8,
+                y: 0,
+                ease: Ease.QuadraticOut,
+              }),
+            );
+            if (nextTrackStart !== undefined) {
+              trackAnimations.push(
+                Scale({
+                  start: nextTrackStart,
+                  duration: transDuration,
+                  initial: 1.0,
+                  by: 0.9,
+                  ease: Ease.QuadraticOut,
+                }),
+                Fade({
+                  start: nextTrackStart,
+                  duration: transDuration,
+                  initial: 1.0,
+                  to: 0.5,
+                  ease: Ease.QuadraticOut,
+                }),
+              );
+            }
+            if (next2TrackStart !== undefined) {
+              trackAnimations.push(
+                Fade({
+                  start: next2TrackStart,
+                  duration: transDuration,
+                  initial: 0.5,
+                  to: 0.0,
+                  ease: Ease.QuadraticOut,
+                }),
+              );
+            }
+          }
+
+          // Calculate continuous activeProgress (0 to 1) for visual styling
+          let activeProgress = 0;
+          if (i === 0) {
+            if (nextTrackStart !== undefined && frame >= nextTrackStart) {
+              activeProgress = interpolate(
+                frame,
+                [nextTrackStart, nextTrackStart + transDuration],
+                [1, 0],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              );
+            } else {
+              activeProgress = 1;
+            }
+          } else {
+            if (nextTrackStart !== undefined && frame >= nextTrackStart) {
+              activeProgress = interpolate(
+                frame,
+                [nextTrackStart, nextTrackStart + transDuration],
+                [1, 0],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              );
+            } else if (frame >= startFrame) {
+              activeProgress = interpolate(
+                frame,
+                [startFrame, startFrame + transDuration],
+                [0, 1],
+                { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+              );
+            } else {
+              activeProgress = 0;
+            }
+          }
+
+          // Dynamic colors based on activeProgress
+          const bgR = Math.round(interpolate(activeProgress, [0, 1], [0, 255]));
+          const bgG = Math.round(interpolate(activeProgress, [0, 1], [0, 255]));
+          const bgB = Math.round(interpolate(activeProgress, [0, 1], [0, 255]));
+          const bgA = interpolate(activeProgress, [0, 1], [0.3, 0.15]);
+          const background = `rgba(${bgR}, ${bgG}, ${bgB}, ${bgA.toFixed(2)})`;
+
+          const borderAlpha = interpolate(activeProgress, [0, 1], [0.05, 0.4]);
+          const border = `1px solid rgba(255, 255, 255, ${borderAlpha.toFixed(2)})`;
+
+          const shadowAlpha = interpolate(activeProgress, [0, 1], [0, 0.2]);
+          const boxShadow =
+            shadowAlpha > 0.01
+              ? `0 8px 32px rgba(0, 183, 255, ${shadowAlpha.toFixed(2)})`
+              : "none";
+
+          const tsR = Math.round(interpolate(activeProgress, [0, 1], [255, 0]));
+          const tsG = Math.round(interpolate(activeProgress, [0, 1], [255, 183]));
+          const tsB = Math.round(interpolate(activeProgress, [0, 1], [255, 255]));
+          const tsA = interpolate(activeProgress, [0, 1], [0.6, 1.0]);
+          const timestampColor = `rgba(${tsR}, ${tsG}, ${tsB}, ${tsA.toFixed(2)})`;
 
           const startSeconds = track.startFrame / fps;
           const timestamp = `[${formatTime(startSeconds, showHours)}]`;
 
           return (
-            <div
+            <Animated
               key={i}
-              style={{
-                background: isCurrent
-                  ? "rgba(255,255,255,0.15)"
-                  : "rgba(0,0,0,0.3)",
-                backdropFilter: "blur(12px)",
-                border: isCurrent
-                  ? "1px solid rgba(255,255,255,0.4)"
-                  : "1px solid rgba(255,255,255,0.05)",
-
-                borderRadius: 20,
-                padding: "16px 24px",
-                color: "white",
-                transform: `scale(${scale})`,
-                opacity,
-                transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 20,
-                boxShadow: isCurrent
-                  ? "0 8px 32px rgba(0, 183, 255, 0.2)"
-                  : "none",
-                width: "100%",
-                maxWidth: 550,
-              }}
+              animations={trackAnimations}
+              style={{ width: "100%", maxWidth: 550 }}
             >
               <div
                 style={{
-                  fontSize: 18,
-                  fontWeight: "bold",
-                  color: isCurrent ? "#00b7ff" : "rgba(255,255,255,0.6)",
-                  fontFamily: "monospace",
+                  background,
+                  backdropFilter: "blur(12px)",
+                  border,
+                  borderRadius: 20,
+                  padding: "16px 24px",
+                  color: "white",
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 20,
+                  boxShadow,
+                  width: "100%",
                 }}
               >
-                {timestamp}
-              </div>
-              <div
-                style={{
-                  fontSize: 24,
-                  fontWeight: isCurrent ? "bold" : "normal",
-                  fontFamily: "sans-serif",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  flex: 1,
-                  textAlign: "left",
-                }}
-              >
-                {track.musicTitle}
-              </div>
-              {isCurrent && (
                 <div
                   style={{
-                    width: 12,
-                    height: 12,
-                    backgroundColor: "#00b7ff",
-                    borderRadius: "50%",
-                    boxShadow: "0 0 10px #00b7ff",
+                    fontSize: 18,
+                    fontWeight: "bold",
+                    color: timestampColor,
+                    fontFamily: "monospace",
                   }}
-                />
-              )}
-            </div>
+                >
+                  {timestamp}
+                </div>
+                <div
+                  style={{
+                    fontSize: 24,
+                    fontWeight: activeProgress > 0.5 ? "bold" : "normal",
+                    fontFamily: "sans-serif",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    flex: 1,
+                    textAlign: "left",
+                  }}
+                >
+                  {track.musicTitle}
+                </div>
+                {activeProgress > 0.01 && (
+                  <div
+                    style={{
+                      width: 12,
+                      height: 12,
+                      backgroundColor: "#00b7ff",
+                      borderRadius: "50%",
+                      boxShadow: `0 0 ${Math.round(10 * activeProgress)}px #00b7ff`,
+                      opacity: activeProgress,
+                      transform: `scale(${activeProgress})`,
+                    }}
+                  />
+                )}
+              </div>
+            </Animated>
           );
         })}
       </div>
@@ -215,3 +377,4 @@ export const TrackList: React.FC<{
     </>
   );
 };
+
