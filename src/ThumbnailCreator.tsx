@@ -19,27 +19,45 @@ export default function ThumbnailCreator(
   const leftTracks = tracks.slice(0, Math.ceil(tracks.length / 2));
   const rightTracks = tracks.slice(Math.ceil(tracks.length / 2));
 
+  // Dynamic font sizing for center title based on text length
+  const getTitleFontSize = (title: string) => {
+    const len = title ? title.length : 0;
+    if (len <= 15) return "90px";
+    if (len <= 25) return "72px";
+    if (len <= 40) return "56px";
+    if (len <= 60) return "44px";
+    return "36px";
+  };
+
   // Helper to render track list
   const renderTrackList = (trackList: any[], startIndex: number, align: "left" | "right") => {
+    const trackCount = trackList.length;
+    const fontSize = trackCount > 14 ? "20px" : trackCount > 10 ? "24px" : "28px";
+    const gap = trackCount > 14 ? "8px" : trackCount > 10 ? "10px" : "12px";
+
     return (
       <div style={{
         display: "flex",
         flexDirection: "column",
-        gap: "12px",
-        width: "35%",
-        padding: "40px",
+        gap,
+        width: "32%",
+        padding: "40px 20px",
         textAlign: align,
         zIndex: 10,
+        boxSizing: "border-box",
+        maxHeight: "75%",
+        overflow: "hidden",
       }}>
         {trackList.map((track, i) => (
           <div key={i} style={{
             color: "white",
-            fontSize: "28px",
+            fontSize,
             fontFamily: fontFamily,
             fontWeight: 700,
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            width: "100%",
             textShadow: "2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0px 4px 6px rgba(0,0,0,0.8)", // Hard black stroke and shadow
           }}>
             {String(startIndex + i + 1).padStart(2, "0")}. {track.musicTitle}
@@ -48,6 +66,9 @@ export default function ThumbnailCreator(
       </div>
     );
   };
+
+  const titleText = props.musicTitle || "";
+  const titleFontSize = getTitleFontSize(titleText);
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#111" }}>
@@ -87,27 +108,36 @@ export default function ThumbnailCreator(
         {/* Center Title */}
         <div style={{
           position: "absolute",
-          top: "55%",
+          top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           zIndex: 20,
-          border: "10px solid white",
-          padding: "20px 80px",
+          border: "8px solid white",
+          padding: "20px 30px",
+          width: "30%",
+          maxWidth: "560px",
+          maxHeight: "60%",
+          boxSizing: "border-box",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           boxShadow: "0px 10px 30px rgba(0,0,0,0.5)",
+          overflow: "hidden",
         }}>
           <h1 style={{
             color: "white",
-            fontSize: "120px",
+            fontSize: titleFontSize,
+            lineHeight: 1.15,
             margin: 0,
             fontFamily: fontFamilySerif,
             fontWeight: "normal",
             textShadow: "3px 3px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 0px 8px 20px rgba(0,0,0,0.8)", // Black stroke + shadow
             textAlign: "center",
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            maxWidth: "100%",
           }}>
-            {props.musicTitle}
+            {titleText}
           </h1>
         </div>
 
@@ -125,6 +155,7 @@ export default function ThumbnailCreator(
         justifyContent: "center",
         alignItems: "center",
         zIndex: 15,
+        pointerEvents: "none",
       }}>
          {/* Fake Sound Wave Lines */}
          <svg width="100%" height="200" viewBox="0 0 1920 200" style={{ position: "absolute" }}>
