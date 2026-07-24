@@ -204,13 +204,7 @@ export async function downloadMusicFile() {
       let downloadBuffer = null;
 
       // Select audio format from adaptive_formats or formats
-      let audioFormat = info.streaming_data?.adaptive_formats?.find((f) => f.mime_type?.includes("audio"));
-      if (!audioFormat) {
-        audioFormat = info.streaming_data?.formats?.find((f) => f.mime_type?.includes("audio") || f.has_audio);
-      }
-      if (!audioFormat) {
-        audioFormat = info.streaming_data?.formats?.[0] || info.streaming_data?.adaptive_formats?.[0];
-      }
+      let audioFormat = info.streaming_data?.formats?.[0] || info.streaming_data?.adaptive_formats?.[0];
 
       if (audioFormat) {
         try {
