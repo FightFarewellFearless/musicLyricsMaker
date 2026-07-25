@@ -81,7 +81,7 @@ console.log("Creating Innertube instance with PoToken...");
 const innertube = await Innertube.create({
   // cache: new UniversalCache(true),
   //player_id: '00c52fa0',
-  cookie: process.env.YT_COOKIE,
+  // cookie: process.env.YT_COOKIE,
   po_token: pot,
   visitor_data: visitorData,
   client_type: "WEB_CREATOR",
