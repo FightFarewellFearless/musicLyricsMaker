@@ -105,6 +105,21 @@ async function withRetry(fn, retries = 3, delayMs = 2000, label = "") {
   throw lastError;
 }
 
+function getAudioDuration(filePath) {
+  try {
+    const output = execSync(
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+    ).toString().trim();
+    const duration = parseFloat(output);
+    if (!isNaN(duration) && duration > 0) {
+      return Math.round(duration * 100) / 100;
+    }
+  } catch (err) {
+    console.warn(`[ffprobe] Failed to probe duration for ${filePath}: ${err.message}`);
+  }
+  return 0;
+}
+
 export async function downloadMusicFile() {
   console.log("Clearing old data in ./public...");
   const publicDir = "./public";
@@ -243,12 +258,18 @@ export async function downloadMusicFile() {
       console.log("Converting music file to MP3...");
       execSync(`ffmpeg -y -i "${tempMp4}" "${finalMp3}"`);
 
+      // Probe actual audio duration directly from MP3 file using ffprobe
+      const probedDuration = getAudioDuration(finalMp3);
+      const ytDuration = song.duration?.seconds || 0;
+      const actualDuration = probedDuration > 0 ? probedDuration : ytDuration;
+      console.log(`Audio duration: ${actualDuration}s (probed: ${probedDuration}s, yt metadata: ${ytDuration}s)`);
+
       const ytmSearchResult = video.songs.contents.map((s) => ({
         id: s.id,
         title: s.title,
         artists: s.artists ? s.artists.map((a) => a.name) : ["Unknown Artist"],
         thumbnail: s.thumbnails?.[0]?.url,
-        duration: s.duration?.seconds || 0,
+        duration: actualDuration,
       }));
 
       // 3. Fetch Thumbnail
@@ -286,12 +307,12 @@ export async function downloadMusicFile() {
           if (Array.isArray(x)) {
             const filtered = x
               .filter((a) => a.syncedLyrics !== null)
-              .filter((a) => Math.abs(a.duration - ytmSearchResult[0].duration) <= 2)
+              .filter((a) => Math.abs(a.duration - actualDuration) <= 4)
               // @ts-ignore
               .toSorted(
                 (a, b) =>
-                  Math.abs(a.duration - ytmSearchResult[0].duration) -
-                  Math.abs(b.duration - ytmSearchResult[0].duration)
+                  Math.abs(a.duration - actualDuration) -
+                  Math.abs(b.duration - actualDuration)
               );
             searchData = filtered[trackProps.searchLyricsIndex || 0];
           }
@@ -356,7 +377,7 @@ export async function downloadMusicFile() {
         tracksData.push({
           ytmMusicInfo: `${ytmSearchResult[0].title} - ${ytmSearchResult[0].artists.join(", ")}`,
           ytmThumbnailExt: thumbExt,
-          duration: ytmSearchResult[0].duration,
+          duration: actualDuration,
           syncronizeLyrics: [{ start: 0, text: `[${ytmSearchResult[0].title} - ${ytmSearchResult[0].artists.join(", ")}]` }],
           translateSyncronizeLyrics: [],
           musicTitle: trackProps.musicTitle,
